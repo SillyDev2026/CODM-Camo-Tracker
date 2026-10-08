@@ -21,6 +21,9 @@ test('every firearm uses only its own weapon-specific attachment choices',()=>{
 });
 test('researched lists are weapon-specific and never imply full coverage',()=>{
  assert.ok(COVERED_WEAPON_IDS.length>=24);
+ const rytec=attachmentChoices('sniper:rytec-amr','ammunition');
+ assert.deepEqual(rytec.choices,['25x59mm Thermite Mag','25x29mm Explosive Mag']);
+ assert.equal(rytec.complete,false);
  const qq9=attachmentChoices('smg:qq9','ammunition');
  assert.equal(qq9.verifiedSlot,true);
  assert.ok(qq9.choices.includes('10mm 30 Round Reload'));
@@ -51,6 +54,7 @@ test('CamoVault share code round trips five attachments and stats only',()=>{
  p=updateBuildDetail(p,'smg','notes','Private notes must not be shared');
  p=updateBuildDetail(p,'smg','gameCode','QQ9-ABC1DEF');
  p=updateBuildDetail(p,'smg','gameMode','BATTLE ROYALE');
+ p=updateBuildDetail(p,'smg','focus','control');
  const code=exportBuildCode('smg:qq9',p);
  assert.match(code,/^CV1\.[\w-]+\.[0-9a-f]{8}$/);
  const restored=importBuildCode(code,'smg:qq9');
@@ -60,6 +64,7 @@ test('CamoVault share code round trips five attachments and stats only',()=>{
  assert.equal(restored.notes,'');
  assert.equal(restored.gameCode,'');
  assert.equal(restored.gameMode,'BATTLE ROYALE');
+ assert.equal(restored.focus,'control');
  assert.doesNotMatch(code,/Private notes|QQ9-ABC1DEF/);
 });
 test('invalid, tampered, game-native and other weapon codes are rejected',()=>{
