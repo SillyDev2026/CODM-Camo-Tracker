@@ -329,3 +329,76 @@ button{touch-action:manipulation}
 .weapon-card-shell .weapon-card-top{margin-bottom:13px}
 .weapon-card-shell .weapon-card-footer{margin-top:9px}
 @media(max-width:390px){.weapon-card-shell .weapon-card{padding:11px 10px 4px;min-height:157px}.weapon-card-shell .weapon-actions{padding:8px}.weapon-card-shell .quick-action{min-width:0;font-size:9px}}
+
+
+/* CamoVault 1.5 Gunsmith build lab / responsive 3D inspector */
+.gunsmith-open{overflow:hidden!important}
+.gs-backdrop{z-index:149;background:rgba(0,0,0,.76)}
+.gunsmith-modal{position:fixed;inset:max(2vh,10px) max(2vw,10px);z-index:150;display:flex;flex-direction:column;border:1px solid #577061;border-radius:16px;overflow:hidden;background:#101b20;color:#ebf6f2;box-shadow:0 22px 100px #000a}
+.gunsmith-modal[hidden],.gs-backdrop[hidden]{display:none!important}
+.gs-header{display:flex;justify-content:space-between;align-items:center;padding:17px 22px;background:#182b2e;border-bottom:1px solid #2f4e4b;gap:10px}
+.gs-header h2{font:800 clamp(27px,3vw,39px)/1 'Barlow Condensed',Impact,sans-serif;margin:4px 0}
+.gs-header p{margin:0;font-size:11px;color:#a8bbb3;line-height:1.45}
+.gs-eyebrow{color:#c9fb55;font-size:10px;font-weight:900;letter-spacing:.18em}
+.gs-close{display:grid;place-items:center;flex:0 0 38px;height:38px;border:1px solid #587169;border-radius:9px;background:#293d40;color:white;font-size:18px}
+.gs-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(320px,.92fr);min-height:0;overflow:hidden;flex:1}
+.gs-view{display:flex;flex-direction:column;gap:12px;padding:18px;min-height:0;overflow:auto;border-right:1px solid #2b4446}
+.gs-viewtop{display:flex;justify-content:space-between;gap:10px;font-size:10px;letter-spacing:.12em;font-weight:800;color:#9ebcb4}
+.gs-viewtop span:last-child{color:#c9fb55}
+.gs-canvas{width:100%;height:clamp(225px,37vh,445px);flex-shrink:0;display:block;touch-action:none;background:#11252b;border:1px solid #39534c;border-radius:12px;cursor:grab}
+.gs-canvas:active{cursor:grabbing}
+.gs-view-actions{display:flex;gap:7px;flex-wrap:wrap}
+.gs-view-actions button{border:1px solid #38544c;border-radius:7px;background:#213632;padding:9px 12px;color:#e7f0e8;font-size:11px;font-weight:800;min-height:36px}
+.gs-hint{color:#9aafa9;font-size:11px;line-height:1.6;margin:0}
+.gs-stats{padding:14px;border:1px solid #304d47;border-radius:10px;background:#16252a}
+.gs-section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.gs-section-head strong{font-size:12px;letter-spacing:.1em;color:#f2f9ee}
+.gs-section-head small{color:#9eb1ac;font-size:10px;line-height:1.4;text-align:right}
+.gs-statgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 17px}
+.gs-stat{display:grid;grid-template-columns:minmax(60px,85px) 1fr 46px;align-items:center;gap:7px;font-size:11px;color:#ceddd9}
+.gs-stat-track{height:5px;border-radius:10px;background:#344a45;overflow:hidden}
+.gs-stat-track div{height:100%;background:#c9fb55;min-width:0}
+.gs-stat input{width:100%;padding:6px 3px;border:1px solid #42615a;border-radius:5px;background:#0c1c20;color:white;font-size:12px;text-align:center;min-width:0}
+.gs-editor{min-height:0;overflow:auto;padding:19px 20px 25px}
+.gs-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:15px}
+.gs-preset{padding:10px 7px;background:#20332e;border:1px solid #395a4b;color:#cadad2;border-radius:9px;font-size:11px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:39px}
+.gs-preset.active{background:#c9fb55;color:#14221b;border-color:#c9fb55}
+.gs-title-input{display:flex;flex-direction:column;gap:6px;font-size:11px;color:#a9bbb5;font-weight:800;margin:10px 0 16px}
+.gs-title-input input,.gs-title-input textarea{width:100%;border:1px solid #3d5453;background:#0b1c21;color:white;border-radius:7px;padding:10px 11px;font:inherit;font-size:12px;resize:vertical}
+.gs-attachment-head{margin-top:18px}
+.gs-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:13px 0 19px}
+.gs-slot{display:flex;flex-direction:column;gap:6px;padding:11px;border:1px solid #324846;border-radius:9px;background:#152529;min-width:0}
+.gs-slot span{font-size:10px;color:#cfe5d7;font-weight:900;letter-spacing:.08em}
+.gs-slot input{width:100%;min-width:0;background:#0c1b21;border:1px solid #38534d;border-radius:5px;padding:9px 8px;color:#f5fff6;font-size:11px}
+.gs-slot small{font-size:9px;color:#92aaa2}
+.gs-slot:has(input:not(:placeholder-shown)){border-color:#7ca460}
+.gs-no-slots{padding:17px;background:#1c2f31;border:1px dashed #537367;border-radius:10px;line-height:1.5;font-size:12px;color:#cedcd7;grid-column:1/-1}
+.gs-actions{display:flex;gap:9px;margin:14px 0}
+.gs-actions button{flex:1;padding:11px 12px;min-height:42px;border-radius:9px;font-size:11px;font-weight:900}
+.gs-primary{background:#c9fb55;color:#17251b;border:1px solid #c9fb55}
+.gs-muted{background:#21342f;color:#cfdfd4;border:1px solid #496258}
+.gs-small{font-size:11px;line-height:1.6;color:#9eb6ad;margin:12px 0}
+.gs-status{color:#c9fb55;min-height:15px;font-size:11px}
+.weapon-build-button{color:#d5e9ed;border-color:#47646d;background:#213743}
+@media(max-width:880px){
+ .gunsmith-modal{inset:0;border:0;border-radius:0}
+ .gs-header{padding:13px 16px;flex-shrink:0}
+ .gs-layout{display:block;overflow:auto;overscroll-behavior:contain}
+ .gs-view{border-right:0;border-bottom:1px solid #39504b;padding:14px;overflow:visible}
+ .gs-canvas{height:clamp(230px,35vh,330px)}
+ .gs-editor{padding:17px;overflow:visible}
+ .gs-statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:425px){
+ .gs-viewtop{font-size:9px;letter-spacing:.06em}
+ .gs-canvas{height:250px}
+ .gs-header h2{font-size:29px}
+ .gs-slots{grid-template-columns:1fr}
+ .gs-statgrid{grid-template-columns:1fr}
+ .gs-section-head{align-items:start}
+ .gs-view{gap:9px}
+ .gs-view-actions button{flex:1}
+ .gs-preset{font-size:10px}
+ .weapon-actions .weapon-build-button{min-width:48px}
+}
+@media(prefers-reduced-motion:reduce){.gunsmith-modal *{scroll-behavior:auto}}
