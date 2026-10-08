@@ -1,6 +1,6 @@
-# CamoVault — COD Mobile camo tracker
+# CamoVault Armory — COD Mobile weapon tracker
 
-**Version 1.0 — no backend required.** A dark, fully responsive progress dashboard for tracking **Gold, Platinum, Damascus, Diamond**, basic camo families, weapon level, Diamond challenges, favorites, and per-weapon notes. Includes a manually curated 2026-era weapon catalog (32 SMGs and additional primary/secondary categories).
+**Version 1.2 — WEAPONS ONLY, encrypted GitHub PAT vault, no backend required.** A dark, fully responsive weapon armory for tracking **Gold, Platinum, Damascus, Diamond**, basic camo families, weapon level, Diamond challenges, favorites, and per-weapon notes. Includes a manually curated 2026-era weapon catalog (32 SMGs and additional primary/secondary categories).
 
 > **Unofficial community tool.** Not affiliated with or endorsed by Activision or Call of Duty. No Activision authentication, credential harvesting, automated account scraping, or claims of in-game verification. Always compare available weapons and camo rules with your game build.
 
@@ -13,12 +13,20 @@
 
 It works from a subdirectory path without build commands or server-side code. To run locally, use `python -m http.server 8000` from this directory and visit `http://localhost:8000`. Opening `index.html` directly via `file://` is *not* recommended because browser modules/storage have restrictions.
 
+## Weapon-only scope
+
+**Included:** ARs, SMGs, LMGs, sniper rifles, marksman rifles, shotguns, pistols, melee weapons and launchers. **Excluded:** tactical/lethal equipment, perks, operator skills and scorestreaks. This is a camo tracker, not a loadout builder.
+
+The site opens into the searchable weapon list. Weapon class chips work on phones and desktops. Mark basic and completionist camos, Diamond progress, weapon levels, favorites and notes.
+
+**v1.0 save compatibility:** weapon IDs, IndexedDB database, profiles, and backup JSON remain unchanged. Existing progress is retained. The six Gold SMG preset is optional.
+
 ## Saving and restoring
 
 - **Automatic saving**: per-profile IndexedDB after each action. A localStorage fallback is attempted when IndexedDB is blocked. Opening and closing the site maintains progress **on the same browser/device** as long as browser site data remains intact.
 - **Portable backup**: Settings → Export JSON and Import JSON. Exporting includes all local profiles. Importing a full backup asks before overwriting existing profiles. Individual profile JSON is also supported.
 - **Six Gold starter import**: Settings → Load my six Gold SMGs. Adds Cordite, QQ9, CBR4, Switchblade X9, OTs 9, TEC-9 without removing any existing progress. Other visitors may leave this unused.
-- **Optional GitHub backup**: Create **your own private repository** for your saves; create a **fine-grained GitHub PAT** limited to that one repository with Contents read/write. In Settings, enter owner, repo and PAT, then upload. The backup goes to `camovault/profiles/<profile-id>.json`. You may restore the same profile when you have its profile ID from an imported backup. Your PAT is used only for direct API calls from your browser, and is not persisted in localStorage, IndexedDB or JSON backup. Closing Settings clears the token field. GitHub is a third-party service, not a self-hosted backend.
+- **Optional GitHub backup**: Create **your own private repository** for your saves; create a **fine-grained GitHub PAT** limited to that one repository with Contents read/write. In Settings, enter owner, repo and PAT, then upload. The backup goes to `camovault/profiles/<profile-id>.json`. You may restore the same profile when you have its profile ID from an imported backup. Your PAT is used only for direct GitHub API calls from the browser. By default it stays in memory, and closing Settings clears the token field. **Optional encrypted device vault:** enter the username, backup repository, token, and a separate password (at least 12 characters), then click **Save encrypted token**. This stores AES-256-GCM ciphertext (PBKDF2-SHA-256, 310,000 iterations, random salt/IV) in browser localStorage. Return later, enter the vault password and click **Unlock saved token**; GitHub owner, repo, and token are restored for that session. **Forget token** removes the encrypted copy. Neither the plaintext PAT nor password is committed to GitHub, put in exported JSON, or sent to our server. The vault is device/browser-specific. Clearing site data removes it. Lost vault passwords cannot be recovered. GitHub is a third-party service, not a self-hosted backend.
 
 **Limitations:** GitHub backup is explicit/manual (not a live background sync). It is intended as an advanced opt-in, not a general consumer login. GitHub fine-grained PATs require granting repository access. **Never** ask users for Activision credentials; **never** place GitHub tokens in a public repository or in source control. Multi-device synchronized login requires a trusted authentication service / backend, which this no-server architecture intentionally avoids.
 
