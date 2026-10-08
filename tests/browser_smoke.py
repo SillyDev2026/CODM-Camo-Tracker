@@ -76,15 +76,29 @@ def main():
             model.wait_for(state="visible", timeout=25000)
             assert page.locator("#gunModelLabel").inner_text() == "IMPORTED CC0 GLB · REAL MESH", "3D model did not load"
             print("Real licensed GLB 3D model rendered in Chromium")
-            page.locator('[data-gs-slot="optic"]').fill("Red Dot Sight")
-            page.locator('[data-gs-slot="optic"]').dispatch_event("change")
+            assert "GENERAL SUGGESTIONS" not in page.locator("#gunsmithCoverage").inner_text()
+            page.locator('[data-gs-slot="optic"]').select_option("__custom__")
+            assert page.locator('[data-gs-custom="optic"]').is_visible()
+            page.locator('[data-gs-custom="optic"]').fill("Red Dot Sight")
+            page.locator('[data-gs-custom="optic"]').dispatch_event("change")
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "__custom__"
             assert page.locator("#gunsmithCapacity").inner_text().startswith("1 / 5")
             page.locator('[data-gs-preset="1"]').click()
-            page.locator('[data-gs-slot="muzzle"]').fill("Suppressor")
-            page.locator('[data-gs-slot="muzzle"]').dispatch_event("change")
+            page.locator('[data-gs-slot="muzzle"]').select_option("OWC Light Compensator")
             page.locator('[data-gs-preset="0"]').click()
-            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight"
+            assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight"
             assert page.locator('[data-gs-slot="muzzle"]').input_value() == ""
+            code = page.locator("#gunsmithShareCode").input_value()
+            assert code.startswith("CV1."), "CamoVault share code missing"
+            page.locator("#gunsmithGameCode").fill("QQ9-1T3A5B6A7M")
+            page.locator("#gunsmithGameCode").dispatch_event("change")
+            page.locator('[data-gs-preset="2"]').click()
+            page.locator("#gunsmithImportCode").fill(code)
+            page.once("dialog", lambda dialog: dialog.accept())
+            page.locator('[data-gs-share="import"]').click()
+            assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "CamoVault code import did not restore attachments"
+            page.locator('[data-gs-preset="0"]').click()
+            assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM game code lost"
             page.locator('[data-gs-stat="Accuracy"]').fill("85")
             page.locator('[data-gs-stat="Accuracy"]').dispatch_event("change")
             page.locator("#gunsmithClose").click()
@@ -109,10 +123,11 @@ def main():
             assert page.locator('[data-mode="zombies"].mode-tab').get_attribute("aria-pressed") == "true", "Mode preference did not persist"
             page.locator('[data-mode="mp"].mode-tab').click()
             page.locator('[data-build="smg:qq9"]').click()
-            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight", "Saved loadout missing after reload"
+            assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "Saved custom attachment missing after reload"
+            assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM share code not saved"
             assert page.locator('[data-gs-stat="Accuracy"]').input_value() == "85", "Saved build stat missing after reload"
             page.locator('[data-gs-preset="1"]').click()
-            assert page.locator('[data-gs-slot="muzzle"]').input_value() == "Suppressor", "Second loadout lost"
+            assert page.locator('[data-gs-slot="muzzle"]').input_value() == "OWC Light Compensator", "Second loadout lost"
             page.locator("#gunsmithClose").click()
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold data lost on reload"
