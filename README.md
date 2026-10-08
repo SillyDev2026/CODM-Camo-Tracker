@@ -71,3 +71,11 @@ The app loads the local save and weapon catalog before requesting upcoming seaso
 - Chooses the newest valid IndexedDB/localStorage save, mirrors successful saves to a fallback when possible, and does not silently reset damaged or blocked storage.
 - Offline cache matches versioned JavaScript/CSS URLs even if their query strings change.
 - Browser regression tests cover filtering, UI responsiveness and recovery.
+
+## Gunsmith Build Lab and 3D Inspector (v1.5.0)
+
+Every weapon card now offers **Build / 3D**. The same shortcut is available from Multiplayer and Zombies camo editors. Each player profile has **three named Gunsmith presets for each weapon**. For firearm classes the editor shows potential slot categories (Muzzle, Barrel, Optic, Stock, Perk, Laser, Underbarrel, Ammunition and Rear Grip) where applicable. Enter each weapon's **actual attachment name from COD Mobile**—the site does not claim every slot or attachment exists on every individual weapon. Up to **five** attachments can be equipped per preset. Melee weapons and launchers have a concept preview and notes without unverified Gunsmith attachment slots.
+
+**3D viewer:** a lightweight offline-capable procedural, class-shaped mesh rendered from rotating 3D geometry. Drag to rotate, pinch or use buttons to zoom, reset or auto-rotate. This preview is **not an extracted or exact 3D model from COD Mobile**; importing accurate licensed models would require authorized model assets supplied separately. Equipped attachment categories change simple features on the preview.
+
+**Stats:** optional 0–100 values manually entered from your in-game Gunsmith for Damage, Fire Rate, Accuracy, Mobility, Range and Control. We do not fabricate base weapon values, predict attachment effects or claim access to CODM data. Each preset may include private notes and a copyable build text summary. All builds are included in JSON exports and optional private GitHub profile backups, while your Gold, Diamond and Aether Crystal records continue unchanged.

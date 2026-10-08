@@ -402,3 +402,8 @@ button{touch-action:manipulation}
  .weapon-actions .weapon-build-button{min-width:48px}
 }
 @media(prefers-reduced-motion:reduce){.gunsmith-modal *{scroll-behavior:auto}}
+
+/* Gunsmith link in existing camo editor */
+.drawer-build-shortcut{display:inline-flex;align-items:center;justify-content:center;gap:5px;margin:8px 0 3px;padding:10px 12px;border-radius:8px;border:1px solid #7c9e80;background:#1b3938;color:#daffbb;font-size:11px;font-weight:900;letter-spacing:.06em;min-height:38px}
+.drawer-build-shortcut:hover{background:#274d42}
+@media(max-width:425px){.drawer-build-shortcut{font-size:10px;padding:10px;max-width:100%}}
