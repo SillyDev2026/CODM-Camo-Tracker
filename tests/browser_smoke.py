@@ -65,6 +65,26 @@ def main():
             page.locator('[data-filter="all"]').click()
             page.locator("#weaponSearch").fill("")
             assert page.locator('[data-quick="smg:qq9"]').count() == 1, "Restoring results dropped quick actions"
+            # New Gunsmith editor is reachable from every weapon card.
+            page.locator('[data-build="smg:qq9"]').click()
+            assert page.locator("#gunsmithModal").is_visible(), "Gunsmith modal did not open"
+            assert page.locator("#gunsmithName").inner_text() == "QQ9"
+            assert page.locator("#gunsmithCanvas").is_visible()
+            page.wait_for_timeout(120)
+            assert page.locator("#gunsmithCanvas").evaluate("(c) => c.width > 10 && c.height > 10"), "3D canvas not initialized"
+            page.locator('[data-gs-slot="optic"]').fill("Red Dot Sight")
+            page.locator('[data-gs-slot="optic"]').dispatch_event("change")
+            assert page.locator("#gunsmithCapacity").inner_text().startswith("1 / 5")
+            page.locator('[data-gs-preset="1"]').click()
+            page.locator('[data-gs-slot="muzzle"]').fill("Suppressor")
+            page.locator('[data-gs-slot="muzzle"]').dispatch_event("change")
+            page.locator('[data-gs-preset="0"]').click()
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight"
+            assert page.locator('[data-gs-slot="muzzle"]').input_value() == ""
+            page.locator('[data-gs-stat="Accuracy"]').fill("85")
+            page.locator('[data-gs-stat="Accuracy"]').dispatch_event("change")
+            page.locator("#gunsmithClose").click()
+            assert page.locator("#gunsmithModal").is_hidden(), "Gunsmith modal did not close"
             page.locator('[data-fav="smg:qq9"]').click()
             assert page.locator('[data-fav="smg:qq9"]').get_attribute("aria-label").startswith("Remove favorite"), "Quick favorite toggle failed"
             page.locator('[data-quick="smg:qq9"]').click()
@@ -84,6 +104,12 @@ def main():
             wait_ready(page, errors)
             assert page.locator('[data-mode="zombies"].mode-tab').get_attribute("aria-pressed") == "true", "Mode preference did not persist"
             page.locator('[data-mode="mp"].mode-tab').click()
+            page.locator('[data-build="smg:qq9"]').click()
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight", "Saved loadout missing after reload"
+            assert page.locator('[data-gs-stat="Accuracy"]').input_value() == "85", "Saved build stat missing after reload"
+            page.locator('[data-gs-preset="1"]').click()
+            assert page.locator('[data-gs-slot="muzzle"]').input_value() == "Suppressor", "Second loadout lost"
+            page.locator("#gunsmithClose").click()
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold data lost on reload"
             assert page.locator('#weaponNotes').input_value() == 'Note saved when drawer is closed', "Notes were lost after editor close"
