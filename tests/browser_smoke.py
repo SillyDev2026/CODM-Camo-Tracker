@@ -134,13 +134,26 @@ def main():
             page.locator("#gunsmithClose").click()
             page.locator("#weaponSearch").fill("RUS-79U")
             page.locator('[data-build="smg:rus-79u"]').click()
+            page.locator("#gunsmithModal").wait_for(state="visible",timeout=15000)
             rus_ammo = page.locator('[data-gs-slot="ammunition"] option').all_text_contents()
-            assert len(rus_ammo) == 2, "Unknown gun must show only empty/custom, no generic guesses"
+            assert "50 Round Extended Mag" in rus_ammo, "RUS documented ammo missing"
+            assert page.locator("#gunsmithSource").is_visible(), "Researched RUS source link missing"
+            assert page.locator("#gunsmithExamples [data-gs-example]").count() > 0, "Research-backed RUS builds missing"
             page.locator('[data-gs-slot="ammunition"]').select_option("__custom__")
             page.locator('[data-gs-custom="ammunition"]').fill("My RUS Magazine")
             page.locator('[data-gs-custom="ammunition"]').dispatch_event("change")
             assert "My RUS Magazine" in page.locator('[data-gs-slot="ammunition"] option').all_text_contents(), "RUS personal library not updated"
-            assert page.locator("#gunsmithSource").is_hidden(), "Unknown gun must not show fake attachment source"
+            page.locator('[data-gs-preset="1"]').click()
+            page.locator('[data-gs-slot="ammunition"]').select_option("My RUS Magazine")
+            assert page.locator('[data-gs-slot="ammunition"]').input_value()=="My RUS Magazine", "Personal part could not be selected in another preset"
+            page.locator("#gunsmithClose").click()
+            page.locator("#weaponSearch").fill("PDW-57")
+            page.locator('[data-build="smg:pdw-57"]').click()
+            page.locator("#gunsmithModal").wait_for(state="visible",timeout=15000)
+            pdw_ammo=page.locator('[data-gs-slot="ammunition"] option').all_text_contents()
+            assert len(pdw_ammo)==2, "Unresearched firearm must offer Empty and Custom only"
+            assert "My RUS Magazine" not in pdw_ammo, "Attachment leaked to unrelated SMG"
+            assert page.locator("#gunsmithSource").is_hidden(), "Unresearched weapon should not claim a source"
             page.locator("#gunsmithClose").click()
             page.locator("#weaponSearch").fill("")
             assert page.locator('[data-fav="smg:qq9"]').count() == 1
