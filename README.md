@@ -54,3 +54,12 @@ The site loads `data/seasonal-weapons.json` with a network-first policy and offl
 
 ## Startup recovery v1.3.1
 The app loads the local save and weapon catalog before requesting upcoming seasonal data. Assets are cache-busted and loaded network-first by the service worker so partial deployments cannot combine outdated HTML and new JavaScript. Browser initialization failures now display their real error instead of falsely blaming storage or clearing the page. This upgrade keeps all original IndexedDB profile data intact.
+
+## Season tracking and QoL (v1.4)
+
+- **Season Command** displays current and previous approved season announcements plus the next confirmed launch. It never guesses next season dates. The timeline grows using the `seasons` and `weapons` arrays in `data/seasonal-weapons.json`. Official info is reviewed first; approved new weapons are automatically enabled at their configured `releaseAt` without losing previous saves.
+- **Refresh** updates the season catalog without replacing any player data. It also refreshes on returning to the page after 10 minutes and while open every 30 minutes.
+- **Quick actions** mark Gold or Aether Crystal with one tap from the weapon grid; the star toggles favorites independently, and opening a card still shows full challenges and levels.
+- **Continue grinding** returns to your most recently updated weapon for the selected mode. New-season and recently edited weapon filters help reduce scrolling.
+- The site remembers the chosen mode and category in local browser storage. Weapon progress remains in the existing v1 IndexedDB database and continues to work with JSON/GitHub backups.
+- The official blog checker opens human-review issues for new season announcements; it does **not** scrape Activision user accounts or automatically invent new guns. Admins add new approved season entries to the manifest without app-code changes.
