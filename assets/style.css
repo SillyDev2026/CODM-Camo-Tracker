@@ -318,3 +318,14 @@ button{touch-action:manipulation}
 }
 @media(max-width:390px){.weapon-card{padding:10px;min-height:204px}.weapon-title{font-size:18px}.weapon-card-footer{font-size:9px}.focus-progress{flex:1}.season-button{font-size:10px}.focus-resume{width:100%}}
 @media(prefers-reduced-motion:reduce){.weapon-card{transition:none}}
+
+/* Keep each weapon card a valid button layout: editor and quick actions are siblings. */
+.weapon-card-shell{min-width:0;display:flex;flex-direction:column;border:1px solid #304246;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#132025,#10191e)}
+.weapon-card-shell:hover{border-color:#81a05d}
+.weapon-card-shell .weapon-card{width:100%;border:none;border-radius:0;min-height:157px;flex:1;padding:14px 14px 5px;transform:none;background:transparent}
+.weapon-card-shell .weapon-card:hover{transform:none;background:#1a2829}
+.weapon-card-shell .weapon-card::before{display:none}
+.weapon-card-shell .weapon-actions{background:#132023;margin:0;padding:9px 12px 11px}
+.weapon-card-shell .weapon-card-top{margin-bottom:13px}
+.weapon-card-shell .weapon-card-footer{margin-top:9px}
+@media(max-width:390px){.weapon-card-shell .weapon-card{padding:11px 10px 4px;min-height:157px}.weapon-card-shell .weapon-actions{padding:8px}.weapon-card-shell .quick-action{min-width:0;font-size:9px}}
