@@ -137,7 +137,9 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
    }else if(el.id==='gunsmithBuildName'){
     flushNotes();save(updateBuildDetail(build,weapon.category,'name',el.value));
    }else if(el.id==='gunsmithGameMode'){
-    flushNotes();save(updateBuildDetail(build,weapon.category,'gameMode',el.value));
+    if(el.dataset.modeApplied!==el.value){
+      flushNotes();save(updateBuildDetail(build,weapon.category,'gameMode',el.value));
+    }
    }else if(el.id==='gunsmithGameCode'){
     flushNotes();save(updateBuildDetail(build,weapon.category,'gameCode',el.value));
     report('Original CODM code saved; CamoVault cannot decode it into attachments.');
@@ -147,6 +149,13 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
   }catch(error){report(error.message);redraw();}
  });
  modal.addEventListener('input',e=>{
+  if(e.target.id==='gunsmithGameMode'&&weapon){
+   const el=e.target;
+   el.dataset.modeApplied=el.value;
+   const next=updateBuildDetail(build,weapon.category,'gameMode',el.value);
+   save(next,false);
+   return;
+  }
   if(e.target.id==='gunsmithNotes'&&weapon){
    clearTimeout(notesTimer);notesPending={id:weapon.id,index:build.active,value:e.target.value};
    notesTimer=setTimeout(flushNotes,350);
