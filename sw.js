@@ -1,5 +1,5 @@
 // Caches only this site's public files. No data, credentials, or GitHub API calls are cached.
-const CACHE = 'camovault-assets-v1.3.0';
+const CACHE = 'camovault-assets-v1.3.1';
 const FILES = ['./', './index.html', './assets/style.css', './assets/favicon.svg', './js/catalog.js', './data/seasonal-weapons.json', './js/storage.js', './js/github.js', './js/token-vault.js', './js/app.js', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
@@ -22,6 +22,17 @@ self.addEventListener('fetch', event => {
   if (url.pathname.endsWith('/data/seasonal-weapons.json')) {
     event.respondWith(fetch(request).then(response => {
       if (response.ok) { const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(request, copy)); }
+      return response;
+    }).catch(() => caches.match(request)));
+    return;
+  }
+  // Network first for scripts, styles, and catalog data to prevent mixed-version startup.
+  if (/\\.(?:js|css|json)$/.test(url.pathname)) {
+    event.respondWith(fetch(request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
+      }
       return response;
     }).catch(() => caches.match(request)));
     return;

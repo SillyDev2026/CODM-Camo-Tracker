@@ -1,7 +1,7 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js';
-import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js';
-import { readCloudProfile, writeCloudProfile } from './github.js';
-import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.3.1';
+import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.3.1';
+import { readCloudProfile, writeCloudProfile } from './github.js?v=1.3.1';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.3.1';
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
@@ -394,14 +394,39 @@ function bindEvents() {
 }
 
 async function boot() {
-  try{seasonStatus=await loadSeasonalWeapons();}catch(error){seasonOffline=true;console.warn('Seasonal catalog unavailable',error);}
+  // Display existing weapon data immediately. Seasonal HTTP requests must not block startup.
   state = await loadState();
+  const mandatory = ['categoryNav','categoryChips','statsGrid','weaponGrid','completedFilter','seasonBanner','weaponSearch','weaponsTitle'];
+  const missing = mandatory.filter(id => !$(id));
+  if (missing.length) throw new Error('The website files are out of sync: ' + missing.join(', '));
   $('dateBadge').textContent = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()).toUpperCase();
-  bindEvents(); renderDashboard();
-  // Preserve the v1.0 IndexedDB schema and weapon IDs to retain existing progress.
-  await saveState(state).then(() => setSaveBadge('Saved locally')).catch(() => setSaveBadge('Storage blocked — export backup', true));
+  bindEvents();
+  renderDashboard();
+  // Existing profiles are always read first. Never wipe IndexedDB to recover from UI errors.
+  await saveState(state).then(() => setSaveBadge('Saved locally')).catch(() => setSaveBadge('Storage unavailable — export a backup', true));
+  loadSeasonalWeapons().then(result => {
+    seasonStatus = result;
+    renderDashboard();
+  }).catch(error => {
+    seasonOffline = true;
+    console.warn('Seasonal catalog unavailable', error);
+    renderSeasonBanner();
+  });
 }
 boot().catch(error => {
-  console.error('CamoVault could not start', error);
-  document.body.textContent = 'Could not open tracker storage. Try updating your browser or disabling private browsing mode.';
+  console.error('CamoVault initialization failed', error);
+  const notice = document.createElement('section');
+  notice.setAttribute('role', 'alert');
+  notice.style.cssText = 'margin:18px;padding:20px;background:#231c19;border:1px solid #9c6355;color:#fff;border-radius:12px;font:14px system-ui';
+  const heading = document.createElement('h2');
+  heading.textContent = 'CamoVault could not finish loading';
+  const detail = document.createElement('p');
+  detail.textContent = (error && error.message ? error.message : 'An unexpected startup error occurred.') + ' Your saved progress has not been cleared.';
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.textContent = 'Reload website';
+  retry.style.cssText = 'padding:10px 14px;background:#c9fb55;border:0;border-radius:7px;color:#172111;font-weight:bold;cursor:pointer';
+  retry.addEventListener('click', () => window.location.reload());
+  notice.append(heading, detail, retry);
+  document.body.prepend(notice);
 });
