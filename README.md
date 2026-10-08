@@ -6,7 +6,7 @@ A free, unofficial, mobile-first COD Mobile camo progress tracker. Tracks Gold, 
 
 The repository includes a GitHub Actions installer that automatically extracts the website files when the release archive is uploaded.
 
-1. Download [CamoVault-GitHub-Pages-v1.0.zip](https://chatgpt.com/) from the original ChatGPT project response (do **not** download it from the URL in this text; that is only a placeholder for reference).
+1. Download **CamoVault-GitHub-Pages-v1.0.zip** from the ChatGPT conversation where this project was generated.
 2. Open [Add file → Upload files](https://github.com/SillyDev2026/CODM-Camo-Tracker/upload/main).
 3. Drag **CamoVault-GitHub-Pages-v1.0.zip** into GitHub and commit to **main**. Keep that exact filename.
 4. Open the repository **Actions** tab and wait for **Install CamoVault site** to finish. The action extracts the archive and commits the full source to the main branch.
