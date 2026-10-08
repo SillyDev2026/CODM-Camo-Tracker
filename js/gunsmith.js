@@ -43,7 +43,7 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
   $('gunsmithShareCode').value=exportBuildCode(weapon.id,build);
   $('gunsmithStats').innerHTML=STAT_NAMES.map(name=>{
    const v=p.stats[name],valid=typeof v==='number';
-   return '<label class="gs-stat"><span>'+safe(name)+'</span><div class="gs-stat-track"><div style="width:'+(valid?v:0)+'%"></div></div><input data-gs-stat="'+safe(name)+'" type="number" inputmode="decimal" min="0" max="100" step="1" placeholder="—" value="'+(valid?v:'')+'" aria-label="'+safe(name)+' in-game stat"></label>';
+   return '<label class="gs-stat"><span>'+safe(name)+'</span><div class="gs-stat-track"><div style="width:'+(valid?Math.min(100,v):0)+'%"></div></div><input data-gs-stat="'+safe(name)+'" type="number" inputmode="decimal" min="0" max="999" step="1" placeholder="—" value="'+(valid?v:'')+'" aria-label="'+safe(name)+' in-game stat"></label>';
   }).join('');
   $('gunsmithCoverage').textContent=coverage.label;
   $('gunsmithCoverage').classList.toggle('is-specific',coverage.verified);

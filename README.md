@@ -99,3 +99,6 @@ Gunsmith now loads self-hosted GLB 3D meshes through the Apache-2.0 `<model-view
 - **CamoVault `CV1.…` code:** automatically generated from the current weapon ID, build name, up to five attachment names and manually entered stats. This compact text code includes a checksum; other CamoVault users can paste it to **import into a preset for the same weapon**, after confirmation. It is **not accepted by COD Mobile**. The code deliberately excludes private notes, profiles, GitHub authentication and the player's real CODM code.
 
 Both code fields and all preset attachments survive local saving, JSON backup and optional GitHub profile backup. The original Multiplayer and Zombies camo schema is unchanged. For season weapons, the community-attachment catalog can be curated incrementally as newly verified weapons arrive, and user-entered data is retained.
+
+### v1.6.0 correction
+CODM displays some weapon stats above 100, so manually entered Gunsmith statistics accept values from 0 to 999. The visual progress bars are capped at full width without changing the original saved value. Previously saved values and existing builds remain readable.

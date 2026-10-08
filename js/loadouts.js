@@ -17,7 +17,7 @@ export function sanitizeBuild(raw,category){
    const name=p.slots[slot];
    if(typeof name==='string'&&name.trim()&&Object.keys(slots).length<MAX_ATTACHMENTS)slots[slot]=name.trim().slice(0,64);
   }
-  if(obj(p.stats))for(const key of STAT_NAMES)if(p.stats[key]!==''&&p.stats[key]!=null&&Number.isFinite(Number(p.stats[key])))stats[key]=Math.min(100,Math.max(0,Number(p.stats[key])));
+  if(obj(p.stats))for(const key of STAT_NAMES)if(p.stats[key]!==''&&p.stats[key]!=null&&Number.isFinite(Number(p.stats[key])))stats[key]=Math.min(999,Math.max(0,Number(p.stats[key])));
   return {name:typeof p.name==='string'&&p.name.trim()?p.name.trim().slice(0,32):'Build '+(i+1),slots,stats,notes:typeof p.notes==='string'?p.notes.slice(0,500):'',gameCode:typeof p.gameCode==='string'&&/^[A-Za-z0-9][A-Za-z0-9-_ .]{0,110}$/.test(p.gameCode.trim())?p.gameCode.trim():''};
  })};
 }
@@ -49,7 +49,7 @@ export function updateBuildDetail(build,category,field,value){
  }
  else if(STAT_NAMES.includes(field)){
   if(value===''||value==null)delete preset.stats[field];
-  else if(Number.isFinite(Number(value)))preset.stats[field]=Math.min(100,Math.max(0,Number(value)));
+  else if(Number.isFinite(Number(value)))preset.stats[field]=Math.min(999,Math.max(0,Number(value)));
  }else throw Error('Unknown field');
  return next;
 }
