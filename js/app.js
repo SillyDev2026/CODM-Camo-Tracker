@@ -212,10 +212,22 @@ async function openBuild(id, trigger) {
   const weapon = BY_ID.get(id);
   if (!weapon) return;
   try {
-    if (!gunsmithPromise) gunsmithPromise = import('./gunsmith.js?v=1.6.4').then(({createGunsmith}) =>
+    if (!gunsmithPromise) gunsmithPromise = Promise.all([
+      import('./gunsmith.js?v=1.7.0'),
+      import('./attachment-library.js?v=1.7.0')
+    ]).then(([{createGunsmith},{rememberAttachment,forgetAttachment}]) =>
       createGunsmith({
         getBuild:id=>profile().builds?.[id],
+        getLibrary:()=>profile().attachmentLibrary||{},
         onSave:(id,build)=>{if(!profile().builds)profile().builds={};profile().builds[id]=build;persist();},
+        onRememberAttachment:(id,slot,name)=>{
+          profile().attachmentLibrary=rememberAttachment(profile().attachmentLibrary,id,slot,name);
+          persist();
+        },
+        onForgetAttachment:(id,slot,name)=>{
+          profile().attachmentLibrary=forgetAttachment(profile().attachmentLibrary,id,slot,name);
+          persist();
+        },
         onClose:()=>{activeDialog=null;},
         notify:message=>toast(message)
       })
