@@ -8,9 +8,10 @@
   <title>CamoVault Armory — COD Mobile Weapons & Camos</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/style.css?v=1.5.0">
-  <script type="module" src="js/app.js?v=1.5.0"></script>
-  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.5.0").catch(() => {}); });</script>
+  <link rel="stylesheet" href="assets/style.css?v=1.5.1">
+  <script type="module" src="js/app.js?v=1.5.1"></script>
+  <script type="module" src="assets/vendor/model-viewer.min.js?v=1.5.1"></script>
+  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.5.1").catch(() => {}); });</script>
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -24,7 +25,7 @@
       <div class="side-bottom">
         <div class="side-note"><span class="side-note-dot"></span> LOCAL SAVE ACTIVE <small>Your progress stays on this device until you choose to back it up.</small></div>
         <button class="side-link" type="button" data-action="open-settings"><span class="side-ico">⚙</span><span>Settings & backup</span></button>
-        <div class="side-version">CAMOVAULT ARMORY v1.5.0 · UNOFFICIAL FAN TOOL</div>
+        <div class="side-version">CAMOVAULT ARMORY v1.5.1 · UNOFFICIAL FAN TOOL</div>
       </div>
     </aside>
     <main class="main-content" id="main">
@@ -50,10 +51,10 @@
   <section id="gunsmithModal" class="gunsmith-modal" role="dialog" aria-modal="true" aria-labelledby="gunsmithName" hidden>
     <header class="gs-header"><div><span class="gs-eyebrow">GUNSMITH · BUILD LAB</span><h2 id="gunsmithName">Weapon</h2><p><span id="gunsmithClass"></span> · <span id="gunsmithRole"></span></p></div><button id="gunsmithClose" type="button" class="gs-close" aria-label="Close Gunsmith">✕</button></header>
     <div class="gs-layout">
-      <section class="gs-view"><div class="gs-viewtop"><span>INTERACTIVE WEAPON INSPECTOR</span><span>PROCEDURAL 3D CONCEPT</span></div>
-        <canvas id="gunsmithCanvas" class="gs-canvas" role="img" aria-label="Rotatable three-dimensional concept of this weapon class, not an exact in-game model"></canvas>
+      <section class="gs-view"><div class="gs-viewtop"><span>INTERACTIVE WEAPON INSPECTOR</span><span id="gunModelLabel">LOADING LICENSED 3D MODEL</span></div>
+        <div class="gs-stage"><canvas id="gunsmithCanvas" class="gs-canvas" role="img" aria-label="Fallback 3D illustration when model loading is unavailable"></canvas></div>
         <div class="gs-view-actions"><button type="button" data-gs-viewer="out" aria-label="Zoom out">−</button><button type="button" data-gs-viewer="in" aria-label="Zoom in">+</button><button type="button" data-gs-viewer="reset">Reset view</button><button type="button" data-gs-viewer="spin" aria-pressed="false">Auto rotate</button></div>
-        <p class="gs-hint">Drag to rotate · Two fingers to zoom · The shape is an illustrative class-based model, not an official CODM weapon asset.</p>
+        <p class="gs-hint">Drag to rotate · Pinch to zoom · The imported GLB is a licensed representative weapon-class model, not the exact in-game weapon.</p>
         <div class="gs-stats"><div class="gs-section-head"><strong>WEAPON STATS</strong><small>Optional · copy exact 0–100 values from in-game Gunsmith</small></div><div id="gunsmithStats" class="gs-statgrid"></div></div>
       </section>
       <section class="gs-editor"><div class="gs-section-head"><strong>YOUR SAVED LOADOUTS</strong><small>3 presets per weapon</small></div>
