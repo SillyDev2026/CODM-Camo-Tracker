@@ -39,3 +39,9 @@ test('cloud path isolates distinct player IDs', () => {
   assert.notEqual(one, two);
   assert.throws(() => cloudPath({ id: '../../bad' }));
 });
+
+test('roster only contains weapons, not tactical, lethal or scorestreak equipment', () => {
+  const forbidden = /flashbang|smoke grenade|thermite|molotov|concussion|trophy system|uav|cluster strike|hunter killer|sentry gun|operator skill|perk/i;
+  for (const weapon of WEAPONS) assert.doesNotMatch(weapon.name, forbidden);
+  assert.deepEqual(GROUPS.map(group => group.id), ['smg', 'ar', 'lmg', 'sniper', 'marksman', 'shotgun', 'pistol', 'melee', 'launcher']);
+});

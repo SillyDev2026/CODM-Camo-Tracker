@@ -1,7 +1,7 @@
 {
-  "name": "CamoVault — COD Mobile Camo Tracker",
+  "name": "CamoVault Armory — COD Mobile Weapon Tracker",
   "short_name": "CamoVault",
-  "description": "Offline-friendly manual COD Mobile camo progress tracker",
+  "description": "Weapons-only COD Mobile camo progress tracker",
   "id": "./",
   "start_url": "./",
   "scope": "./",

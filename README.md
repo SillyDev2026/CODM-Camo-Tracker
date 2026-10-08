@@ -1,6 +1,6 @@
-# CamoVault — COD Mobile camo tracker
+# CamoVault Armory — COD Mobile weapon tracker
 
-**Version 1.0 — no backend required.** A dark, fully responsive progress dashboard for tracking **Gold, Platinum, Damascus, Diamond**, basic camo families, weapon level, Diamond challenges, favorites, and per-weapon notes. Includes a manually curated 2026-era weapon catalog (32 SMGs and additional primary/secondary categories).
+**Version 1.1 — WEAPONS ONLY, no backend required.** A dark, fully responsive weapon armory for tracking **Gold, Platinum, Damascus, Diamond**, basic camo families, weapon level, Diamond challenges, favorites, and per-weapon notes. Includes a manually curated 2026-era weapon catalog (32 SMGs and additional primary/secondary categories).
 
 > **Unofficial community tool.** Not affiliated with or endorsed by Activision or Call of Duty. No Activision authentication, credential harvesting, automated account scraping, or claims of in-game verification. Always compare available weapons and camo rules with your game build.
 
@@ -12,6 +12,14 @@
 4. Your site will be `https://YOUR-USERNAME.github.io/codm-camo-tracker/`. You can use an existing custom domain if you own it and configure DNS.
 
 It works from a subdirectory path without build commands or server-side code. To run locally, use `python -m http.server 8000` from this directory and visit `http://localhost:8000`. Opening `index.html` directly via `file://` is *not* recommended because browser modules/storage have restrictions.
+
+## Weapon-only scope
+
+**Included:** ARs, SMGs, LMGs, sniper rifles, marksman rifles, shotguns, pistols, melee weapons and launchers. **Excluded:** tactical/lethal equipment, perks, operator skills and scorestreaks. This is a camo tracker, not a loadout builder.
+
+The site opens into the searchable weapon list. Weapon class chips work on phones and desktops. Mark basic and completionist camos, Diamond progress, weapon levels, favorites and notes.
+
+**v1.0 save compatibility:** weapon IDs, IndexedDB database, profiles, and backup JSON remain unchanged. Existing progress is retained. The six Gold SMG preset is optional.
 
 ## Saving and restoring
 

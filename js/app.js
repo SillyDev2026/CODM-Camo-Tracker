@@ -10,8 +10,8 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, Number.isFinite(v
 const pct = (current, total) => total ? clamp(current / total * 100, 0, 100) : 0;
 const lastUpdated = entry => Number(entry.updatedAt) || 0;
 let state;
-let currentView = 'overview';
-let activeCategory = 'smg';
+let currentView = 'weapons';
+let activeCategory = null;
 let currentFilter = 'all';
 let selectedId = null;
 let saveTimer;
@@ -49,8 +49,9 @@ function mutate(id, apply, repaintDrawer = false) {
 }
 function renderNavigation() {
   $('categoryNav').innerHTML = GROUPS.map(group => `<button type="button" class="side-link ${currentView === 'category' && activeCategory === group.id ? 'active' : ''}" data-category="${group.id}"><span class="side-ico">${symbols[group.id]}</span><span>${safe(group.name)}</span><span class="count">${group.weapons.split('|').length}</span></button>`).join('');
-  document.querySelectorAll('[data-nav]').forEach(button => button.classList.toggle('active', button.dataset.nav === currentView));
-  $('breadcrumb').textContent = currentView === 'category' ? GROUP_BY_ID.get(activeCategory).short : currentView.toUpperCase();
+  $('categoryChips').innerHTML = `<button type="button" class="category-chip ${activeCategory === null ? 'active' : ''}" data-nav="weapons"><span>All weapons</span><strong>${WEAPONS.length}</strong></button>` + GROUPS.map(group => `<button type="button" class="category-chip ${activeCategory === group.id ? 'active' : ''}" data-category="${group.id}"><span>${safe(group.short)}</span><strong>${goldTotal(progress(),group.id)}/${group.weapons.split('|').length}</strong></button>`).join('');
+  document.querySelectorAll('[data-nav]').forEach(button => { if (!button.classList.contains('category-chip')) button.classList.toggle('active', button.dataset.nav === currentView); });
+  $('breadcrumb').textContent = currentView === 'category' ? GROUP_BY_ID.get(activeCategory).short : 'WEAPONS';
 }
 function statCard(label, count, caption, css, icon, target = WEAPONS.length) {
   return `<div class="stat-card"><div class="stat-label">${label} <span class="stat-miniicon">${icon}</span></div><div class="stat-big ${css}">${count}<span style="font-size:16px;color:#708580">/${target}</span></div><div class="stat-desc">${caption}</div><div class="stat-progress"><span style="width:${pct(count, target)}%"></span></div></div>`;
@@ -64,18 +65,9 @@ function renderStats() {
     statCard('DAMASCUS UNLOCKED', completedCount(p, 'damascus'), 'Personally confirmed unlocks', 'damascus', '✧')
   ].join('');
 }
-function renderClassCards() {
-  const p = progress();
-  $('classCount').textContent = GROUPS.length.toString().padStart(2, '0');
-  $('classGrid').innerHTML = GROUPS.map(group => {
-    const total = group.weapons.split('|').length;
-    const gold = goldTotal(p, group.id);
-    return `<button class="class-card" data-category="${group.id}" type="button" aria-label="Show ${safe(group.name)}"><div class="class-card-top"><div class="class-mark">${symbols[group.id]}</div><span class="class-arrow">↗</span></div><div class="class-name">${safe(group.name)}</div><div class="class-meta"><span>${total} weapons</span><span><strong>${gold}</strong> / ${total} Gold</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct(gold, total)}%"></div></div></button>`;
-  }).join('');
-}
 function matchesFilter(weapon) {
   const e = entry(weapon.id);
-  const started = Boolean(e.gold || e.platinum || e.damascus || e.diamond || e.favorite || (e.level > 0) || (e.diamondCount > 0) || Object.values(e.base || {}).some(Boolean));
+  const started = Boolean(e.gold || e.platinum || e.damascus || e.diamond || (e.level > 0) || (e.diamondCount > 0) || Object.values(e.base || {}).some(Boolean));
   if (currentFilter === 'gold') return Boolean(e.gold);
   if (currentFilter === 'unstarted') return !started;
   if (currentFilter === 'inprogress') return started && !e.gold;
@@ -89,6 +81,7 @@ function getVisibleWeapons() {
   if (sort === 'az') visible = visible.sort((a, b) => a.name.localeCompare(b.name));
   if (sort === 'progress') visible = visible.sort((a, b) => weaponCompletion(entry(b.id)) - weaponCompletion(entry(a.id)));
   if (sort === 'recent') visible = visible.sort((a, b) => lastUpdated(entry(b.id)) - lastUpdated(entry(a.id)));
+  if (sort === 'level') visible = visible.sort((a, b) => (entry(b.id).level || 0) - (entry(a.id).level || 0));
   return visible;
 }
 function renderWeaponGrid() {
@@ -100,7 +93,8 @@ function renderWeaponGrid() {
     const e = entry(weapon.id);
     const tags = COMPLETIONIST.filter(key => e[key]).map(key => `<span class="weapon-pill ${key}">${safe(key.toUpperCase())}</span>`).join('');
     const rank = weaponCompletion(e);
-    return `<button class="weapon-card" type="button" data-weapon="${weapon.id}" aria-label="Edit ${safe(weapon.name)} camo progress"><div class="weapon-card-top"><span class="weapon-class-label">${GROUP_BY_ID.get(weapon.category).short}</span><span class="favorite-symbol ${e.favorite ? 'on' : ''}">${e.favorite ? '★' : '☆'}</span></div><div class="weapon-title" title="${safe(weapon.name)}">${safe(weapon.name)}</div><div class="weapon-tags">${tags || '<span class="weapon-pill">NOT COMPLETED</span>'}</div><div class="weapon-card-footer"><span>${rank}/10 CAMO MILESTONES</span><span class="arrow">↗</span></div></button>`;
+    const level = Number(e.level) > 0 ? `LVL ${e.level}${e.maxLevel ? `/${e.maxLevel}` : ''}` : 'LEVEL NOT SET';
+    return `<button class="weapon-card" type="button" data-weapon="${weapon.id}" aria-label="Edit ${safe(weapon.name)} camo progress"><div class="weapon-card-top"><span class="weapon-class-label">${GROUP_BY_ID.get(weapon.category).short}</span><span class="favorite-symbol ${e.favorite ? 'on' : ''}">${e.favorite ? '★' : '☆'}</span></div><div class="weapon-title" title="${safe(weapon.name)}">${safe(weapon.name)}</div><div class="weapon-tags">${tags || '<span class="weapon-pill">NOT COMPLETED</span>'}</div><div class="weapon-level">${safe(level)}</div><div class="progress-track weapon-meter"><div class="progress-fill" style="width:${pct(rank,10)}%"></div></div><div class="weapon-card-footer"><span>${rank}/10 CAMO MILESTONES</span><span class="arrow">↗</span></div></button>`;
   }).join('');
   $('emptyState').hidden = visible.length > 0;
   document.querySelectorAll('[data-filter]').forEach(button => button.classList.toggle('active', button.dataset.filter === currentFilter));
@@ -108,21 +102,17 @@ function renderWeaponGrid() {
 function renderDashboard() {
   $('profileName').textContent = profile().name;
   $('avatar').textContent = profile().name.charAt(0).toUpperCase() || 'P';
-  $('pageTitle').innerHTML = currentView === 'overview' ? 'Welcome back, operator<span class="period">.</span>' : currentView === 'category' ? `${safe(GROUP_BY_ID.get(activeCategory).name)}<span class="period">.</span>` : 'The full armory<span class="period">.</span>';
-  $('pageSubtitle').textContent = currentView === 'category' ? 'Every unlock recorded. Every milestone within reach.' : 'Your grind, mapped out. Your progress, always saved.';
-  $('hero').hidden = currentView !== 'overview';
-  $('classGrid').hidden = currentView !== 'overview';
-  $('categoriesHeading').hidden = currentView !== 'overview';
-  renderNavigation(); renderStats();
-  if (currentView === 'overview') renderClassCards();
-  renderWeaponGrid();
+  $('pageTitle').innerHTML = activeCategory ? `${safe(GROUP_BY_ID.get(activeCategory).name)}<span class="period">.</span>` : 'Your weapon armory<span class="period">.</span>';
+  $('pageSubtitle').textContent = activeCategory ? 'Check off Gold, Platinum, Damascus, Diamond, and basic weapon camos.' : 'Every weapon class in one place. No equipment, perks, or scorestreaks.';
+  renderNavigation(); renderStats(); renderWeaponGrid();
 }
 function go(view, category = null) {
-  currentView = view;
-  activeCategory = view === 'weapons' ? null : (category || 'smg');
+  currentView = view === 'category' && GROUP_BY_ID.has(category) ? 'category' : 'weapons';
+  activeCategory = currentView === 'category' ? category : null;
   $('weaponSearch').value = ''; currentFilter = 'all';
   renderDashboard(); closeMenu();
-  window.scrollTo({ top: view === 'overview' ? 0 : Math.max(0, $('weaponSection').getBoundingClientRect().top + window.scrollY - 88), behavior: 'smooth' });
+  const top = Math.max(0, $('weaponSection').getBoundingClientRect().top + window.scrollY - 84);
+  window.scrollTo({ top, behavior: 'smooth' });
 }
 function renderDrawer() {
   if (!selectedId) return;
@@ -311,7 +301,7 @@ async function boot() {
   state = await loadState();
   $('dateBadge').textContent = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()).toUpperCase();
   bindEvents(); renderDashboard();
-  // First visit creates persistent local profile before any user interaction.
+  // Preserve the v1.0 IndexedDB schema and weapon IDs to retain existing progress.
   await saveState(state).then(() => setSaveBadge('Saved locally')).catch(() => setSaveBadge('Storage blocked — export backup', true));
 }
 boot().catch(error => {
