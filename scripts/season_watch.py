@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from html.parser import HTMLParser
+from datetime import date, timedelta
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 from pathlib import Path
@@ -25,12 +26,25 @@ class Links(HTMLParser):
         if parsed.netloc in ("www.callofduty.com", "callofduty.com") and PATTERN.fullmatch(parsed.path) and url not in self.urls:
             self.urls.append(url)
 
-def new_articles(html, baseline):
+def new_articles(html, baseline, today=None):
     parser = Links()
     parser.feed(html)
-    if not parser.urls or baseline not in parser.urls:
-        return []  # If the baseline is missing, do not flood issues with old seasons.
-    return parser.urls[:parser.urls.index(baseline)][:4]
+    if not parser.urls:
+        return []
+    if baseline in parser.urls:
+        return parser.urls[:parser.urls.index(baseline)][:4]
+    # After several seasons the baseline can disappear from the blog landing
+    # page. Continue finding recently announced seasons instead of going silent.
+    today = today or date.today()
+    cutoff = today - timedelta(days=100)
+    recent = []
+    for url in parser.urls:
+        parsed = urlparse(url).path.split("/")
+        year, month = int(parsed[2]), int(parsed[3])
+        article_month = date(year, month, 1)
+        if article_month >= date(cutoff.year, cutoff.month, 1):
+            recent.append(url)
+    return recent[:4]
 
 def main():
     watch = json.loads((ROOT/"data"/"season-watch.json").read_text(encoding="utf-8"))
