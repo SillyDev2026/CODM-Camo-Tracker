@@ -23,11 +23,60 @@ const SOURCES = Object.freeze({
  type63:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-type-63-loadout',
  bp50:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-bp50-loadout',
  seasonal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-6-2025',
- raal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-raal-mg-loadout'
+ raal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-raal-mg-loadout',
+ rus:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-rus-79u-gunsmith-loadout-attachments-in-cod-mobile',
+ ak117:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-ak117-gunsmith-loadout-attachments-in-cod-mobile/',
+ drh:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-dr-h-gunsmith-loadout-attachments-in-cod-mobile',
+ mac10:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/mac-10-stats-attachment-skin',
+ gks:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/gks-stats-attachment-skin/',
+ krm:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/krm-262-stats-attachment-skin',
+ rytec:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/rytec-amr-gunsmith-attachments-list'
 });
 // Each per-weapon item lists documented example choices, not every option.
 // Coverage is intentionally partial; never infer a complete set from loadout articles.
 const SPECIFIC = Object.freeze({
+ 'smg:rus-79u':{source:SOURCES.rus,slots:{
+  muzzle:['OWC Light Compensator'],barrel:['YKM Integral Suppressor Light','OWC Marksman'],
+  stock:['No Stock','MIP Strike Stock','YKM Combat Stock'],
+  laser:['OWC Laser - Tactical'],underbarrel:['Ranger Foregrip','Strike Foregrip'],
+  ammunition:['38 Round Fast Reload','50 Round Extended Mag'],
+  reargrip:['Granulated Grip Tape','Stippled Grip Tape']
+ }},
+ 'ar:ak117':{source:SOURCES.ak117,slots:{
+  muzzle:['RTC Light Muzzle Brake','Tactical Suppressor','RTC Muzzle Brake','OWC Light Compensator'],
+  barrel:['MIP Extended Light Barrel','OWC Marksman'],stock:['OWC Skeleton Stock','No Stock'],
+  laser:['OWC Laser - Tactical'],underbarrel:['Strike Foregrip'],
+  ammunition:['40 Round Extended Mag'],reargrip:['Stippled Grip Tape']
+ }},
+ 'ar:dr-h':{source:SOURCES.drh,slots:{
+  muzzle:['OWC Light Compensator','Monolithic Suppressor'],
+  barrel:['OWC Ranger'],stock:['No Stock','MIP Strike Stock'],
+  laser:['OWC Laser - Tactical'],underbarrel:['Operator Foregrip','Strike Foregrip'],
+  ammunition:['25 Round OTM Mag'],reargrip:['Stippled Grip Tape']
+ }},
+ 'smg:mac-10':{source:SOURCES.mac10,slots:{
+  muzzle:['Agency Suppressor'],barrel:['Taskforce Barrel'],stock:['Steel Stock'],
+  underbarrel:['Striker Foregrip'],ammunition:['STANAG 53 Round Extended Reload']
+ }},
+ 'smg:gks':{source:SOURCES.gks,slots:{
+  barrel:['YKM Integral Suppressor'],stock:['YKM Combat Stock'],
+  laser:['OWC Laser - Tactical'],ammunition:['32 Round Fast Reload'],
+  reargrip:['Granulated Grip Tape']
+ }},
+ 'shotgun:krm-262':{source:SOURCES.krm,slots:{
+  muzzle:['Marauder Suppressor'],barrel:['Extended Barrel (+2)'],
+  stock:['RTC Steady Stock'],laser:['MIP Laser 5mW'],
+  reargrip:['Stippled Grip Tape']
+ }},
+ 'sniper:rytec-amr':{source:SOURCES.rytec,slots:{
+  muzzle:['Tactical Suppressor','OWC Light Suppressor','Monolithic Suppressor','RTC Compensator','MIP Light Flash Guard','RTC Light Muzzle Brake'],
+  barrel:['MIP Light Barrel (Short)','MIP Extended Light Barrel','OWC Marksman'],
+  optic:['3X Tactical Scope 1','3X Tactical Scope 2','3X Tactical Scope 3','4X Tactical Scope','6X Tactical Scope 2','6x Tactical Scope 3'],
+  stock:['YKM Light Stock','OWC Skeleton Stock','RTC Steady Stock'],
+  laser:['OWC Laser - Tactical'],underbarrel:['Bipod'],
+  ammunition:['25x59mm Thermite Mag','25x29mm Explosive Mag'],
+  reargrip:['Granulated Grip Tape','Rubberized Grip Tape','Stippled Grip Tape']
+ }},
 
  // Weapon-specific examples are individual documented configurations,
  // NEVER an exhaustive list or compatibility guarantees for a future season.
@@ -189,4 +238,25 @@ export function attachmentCoverage(weaponId) {
 }
 export function isListedAttachment(weaponId,slot,value) {
  return attachmentChoices(weaponId,slot).choices.includes(value);
+}
+
+const PRESETS = Object.freeze({
+ 'smg:rus-79u':[
+  {name:'Balanced · source build',source:SOURCES.rus,slots:{muzzle:'OWC Light Compensator',stock:'No Stock',laser:'OWC Laser - Tactical',underbarrel:'Ranger Foregrip',reargrip:'Granulated Grip Tape'}},
+  {name:'Stealth · source build',source:SOURCES.rus,slots:{barrel:'YKM Integral Suppressor Light',stock:'MIP Strike Stock',underbarrel:'Ranger Foregrip',reargrip:'Stippled Grip Tape',ammunition:'38 Round Fast Reload'}}
+ ],
+ 'ar:ak117':[
+  {name:'Aggressive · source build',source:SOURCES.ak117,slots:{muzzle:'RTC Light Muzzle Brake',stock:'OWC Skeleton Stock',laser:'OWC Laser - Tactical',ammunition:'40 Round Extended Mag',reargrip:'Stippled Grip Tape'}},
+  {name:'All rounder · source build',source:SOURCES.ak117,slots:{muzzle:'RTC Muzzle Brake',barrel:'MIP Extended Light Barrel',laser:'OWC Laser - Tactical',underbarrel:'Strike Foregrip',reargrip:'Stippled Grip Tape'}}
+ ],
+ 'ar:dr-h':[
+  {name:'Aggressive · source build',source:SOURCES.drh,slots:{muzzle:'OWC Light Compensator',stock:'No Stock',laser:'OWC Laser - Tactical',ammunition:'25 Round OTM Mag',reargrip:'Stippled Grip Tape'}},
+  {name:'All rounder · source build',source:SOURCES.drh,slots:{muzzle:'OWC Light Compensator',barrel:'OWC Ranger',laser:'OWC Laser - Tactical',ammunition:'25 Round OTM Mag',reargrip:'Stippled Grip Tape'}}
+ ],
+ 'smg:mac-10':[{name:'Run and gun · source build',source:SOURCES.mac10,slots:{muzzle:'Agency Suppressor',barrel:'Taskforce Barrel',stock:'Steel Stock',underbarrel:'Striker Foregrip',ammunition:'STANAG 53 Round Extended Reload'}}],
+ 'smg:gks':[{name:'Silenced · source build',source:SOURCES.gks,slots:{barrel:'YKM Integral Suppressor',stock:'YKM Combat Stock',laser:'OWC Laser - Tactical',ammunition:'32 Round Fast Reload',reargrip:'Granulated Grip Tape'}}],
+ 'shotgun:krm-262':[{name:'Range · source build',source:SOURCES.krm,slots:{muzzle:'Marauder Suppressor',barrel:'Extended Barrel (+2)',stock:'RTC Steady Stock',laser:'MIP Laser 5mW',reargrip:'Stippled Grip Tape'}}]
+});
+export function recommendedBuilds(weaponId){
+ return (PRESETS[weaponId]||[]).map(p=>({name:p.name,source:p.source,slots:{...p.slots}}));
 }
