@@ -22,7 +22,7 @@ export function exportBuildCode(weaponId,build){
  const category=weaponId.slice(0,weaponId.indexOf(':'));
  const p=sanitizeBuild(build,category).presets[sanitizeBuild(build,category).active];
  // Preserve no private notes and no player identity.
- const payload=JSON.stringify({v:1,w:weaponId,n:p.name,s:p.slots,t:p.stats});
+ const payload=JSON.stringify({v:1,w:weaponId,n:p.name,s:p.slots,t:p.stats,m:p.gameMode});
  const raw=encodeText(payload);
  const code=MAGIC+'.'+raw+'.'+checksum(payload);
  if(code.length>3000)throw Error('Build is too large to share');
@@ -43,6 +43,6 @@ export function importBuildCode(code,expectedWeaponId){
  if(!data||data.v!==1||typeof data.w!=='string'||data.w!==expectedWeaponId)throw Error('This build code belongs to another weapon');
  if(!data.s||typeof data.s!=='object'||Array.isArray(data.s)||typeof data.n!=='string')throw Error('Share code is missing attachments');
  const category=expectedWeaponId.split(':')[0];
- const preset=sanitizeBuild({active:0,presets:[{name:data.n,slots:data.s,stats:data.t||{},notes:'',gameCode:''}]},category).presets[0];
+ const preset=sanitizeBuild({active:0,presets:[{name:data.n,slots:data.s,stats:data.t||{},notes:'',gameCode:'',gameMode:data.m}]},category).presets[0];
  return preset;
 }

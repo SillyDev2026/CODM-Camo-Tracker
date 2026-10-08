@@ -40,6 +40,7 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
   $('gunsmithBuildName').value=p.name;
   $('gunsmithNotes').value=p.notes;
   $('gunsmithGameCode').value=p.gameCode||'';
+  $('gunsmithGameMode').value=p.gameMode||'MULTIPLAYER';
   $('gunsmithShareCode').value=exportBuildCode(weapon.id,build);
   $('gunsmithStats').innerHTML=STAT_NAMES.map(name=>{
    const v=p.stats[name],valid=typeof v==='number';
@@ -135,6 +136,8 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
     save(updateBuildDetail(build,weapon.category,el.dataset.gsStat,el.value));
    }else if(el.id==='gunsmithBuildName'){
     flushNotes();save(updateBuildDetail(build,weapon.category,'name',el.value));
+   }else if(el.id==='gunsmithGameMode'){
+    flushNotes();save(updateBuildDetail(build,weapon.category,'gameMode',el.value));
    }else if(el.id==='gunsmithGameCode'){
     flushNotes();save(updateBuildDetail(build,weapon.category,'gameCode',el.value));
     report('Original CODM code saved; CamoVault cannot decode it into attachments.');
