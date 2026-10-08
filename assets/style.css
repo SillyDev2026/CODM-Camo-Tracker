@@ -485,3 +485,14 @@ button{touch-action:manipulation}
 .gs-library-chip button{display:grid;place-items:center;flex-shrink:0;width:25px;height:25px;background:#324e49;border:1px solid #658079;border-radius:6px;color:#f3e9db;font-weight:900;font-size:14px}
 .gs-library-chip button:focus-visible{outline:2px solid #c9fb55;outline-offset:2px}
 @media(max-width:425px){.gs-personal-library{padding:10px}.gs-library-chip{font-size:9px}.gs-focus-tip{font-size:10px}}
+
+
+/* v1.7.1 · weapon-specific research builds */
+.gs-build-examples{background:#172c2b;border:1px solid #3b5b4f;border-radius:11px;padding:13px;margin:6px 0 18px}
+.gs-build-examples .gs-section-head{margin-bottom:9px}
+.gs-example-actions{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.gs-example{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 12px;min-width:0;border:1px solid #90b260;border-radius:8px;color:#eaffc8;background:#294336;font-size:11px;font-weight:800;line-height:1.4;text-align:left}
+.gs-example:hover{background:#365440;border-color:#c9fb55}
+.gs-example:focus-visible{outline:2px solid #c9fb55;outline-offset:2px}
+.gs-build-examples .gs-hint{font-size:11px;line-height:1.5}
+@media(max-width:450px){.gs-example-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.gs-example{font-size:10px;padding:11px 8px}}
