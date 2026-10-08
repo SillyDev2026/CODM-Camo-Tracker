@@ -23,14 +23,16 @@ jobs:
           python-version: '3.12'
       - name: Retrieve public-domain models from pinned source revisions
         run: python scripts/import_models.py
-      - name: Commit licensed GLB assets to this repository
+      - name: Vendor 3D WebGL viewer from pinned Apache-2.0 release
+        run: python scripts/vendor_viewer.py
+      - name: Commit licensed 3D models and WebGL viewer to this repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/models/*.glb
+          git add assets/models/*.glb assets/vendor/model-viewer.min.js
           if git diff --cached --quiet; then
             echo "Models are already in sync."
           else
-            git commit -m "Import 9 licensed CC0 Gunsmith GLB models"
+            git commit -m "Import CC0 GLB models and licensed WebGL viewer"
             git push origin HEAD:main
           fi
