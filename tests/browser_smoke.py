@@ -43,9 +43,14 @@ def main():
             page.goto(url, wait_until="domcontentloaded")
             wait_ready(page, errors)
             print("Startup passed with IndexedDB")
+            dimensions = page.evaluate("({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})")
+            print("Mobile layout dimensions:", dimensions)
+            assert dimensions["scroll"] <= dimensions["width"], "Mobile layout has horizontal overflow"
             assert page.locator("#seasonTitle").count() == 1, "Season command missing"
             assert page.locator("#focusResume").count() == 1, "Continue button missing"
             assert page.locator('[data-quick="smg:qq9"]').count() == 1, "One-tap Gold action missing"
+            page.locator('[data-fav="smg:qq9"]').click()
+            assert page.locator('[data-fav="smg:qq9"]').get_attribute("aria-label").startswith("Remove favorite"), "Quick favorite toggle failed"
             page.locator('[data-quick="smg:qq9"]').click()
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold quick toggle failed"
@@ -68,7 +73,8 @@ def main():
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-zombie-check="aetherCrystal"]').is_checked(), "Zombies data lost on reload"
             assert page.locator('input[data-zombie-number="matches"]').input_value() == "3"
-            print("MP and Zombies data survive reload; mode preference and quick action work")
+            print("MP and Zombies data survive reload; mode preference and quick actions work")
+            assert page.locator("#seasonTitle").is_visible(), "Season hub is not visible"
             page.close()
             context = browser.new_context(viewport={"width": 375, "height": 812})
             context.add_init_script("Object.defineProperty(window, 'indexedDB', {value:undefined, configurable:true});")
