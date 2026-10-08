@@ -93,23 +93,60 @@ export function cleanState(value) {
   if (!value || !Array.isArray(value.profiles) || !value.profiles.length) throw new Error('Invalid tracker backup');
   const profiles = value.profiles.slice(0, 30).map((profile, index) => cleanProfile(profile, `Player ${index + 1}`));
   const activeProfileId = profiles.some(profile => profile.id === value.activeProfileId) ? value.activeProfileId : profiles[0].id;
-  return { version: 1, profiles, activeProfileId };
+  return { version: 1, profiles, activeProfileId, savedAt: Number.isFinite(value.savedAt) && value.savedAt > 0 ? value.savedAt : 0 };
+}
+
+// Chooses the newest valid copy without discarding valid older data when one
+// browser provider is damaged or temporarily unavailable.
+export function chooseSavedState(primary, fallback) {
+  const valid = [];
+  for (const source of [primary, fallback]) {
+    if (source == null) continue;
+    try { valid.push(cleanState(source)); }
+    catch { /* The alternate provider might still contain a valid save. */ }
+  }
+  if (!valid.length) {
+    if (primary != null || fallback != null) throw new Error('Saved tracker data cannot be read. Nothing was overwritten. Try another browser or restore an exported backup.');
+    return null;
+  }
+  return valid.sort((a, b) => b.savedAt - a.savedAt)[0];
 }
 
 let latestSave = Promise.resolve();
 export async function loadState() {
-  let result = null;
-  try { result = await dbRead(); }
-  catch { try { result = JSON.parse(localStorage.getItem(FALLBACK) || 'null'); } catch { /* disabled storage */ } }
-  try { return result ? cleanState(result) : freshState(); }
-  catch { return freshState(); }
+  let primary = null, fallback = null, dbError = null, fallbackRaw = null;
+  try { primary = await dbRead(); }
+  catch (error) { dbError = error; }
+  try {
+    fallbackRaw = localStorage.getItem(FALLBACK);
+    if (fallbackRaw) fallback = JSON.parse(fallbackRaw);
+  } catch {
+    // Only malformed *existing* JSON is treated as corrupted. Blocked access
+    // does not mean the browser previously held an invalid save.
+    if (fallbackRaw) fallback = { profiles: null };
+  }
+  const saved = chooseSavedState(primary, fallback);
+  if (saved) return saved;
+  // A blocked IndexedDB API might hide an existing database. Never overwrite
+  // that potentially valuable save with an empty profile on startup.
+  if (dbError && typeof indexedDB !== 'undefined') throw new Error('Browser storage is blocked. Your progress has not been reset. Enable site storage and reload.');
+  return freshState();
 }
 export function saveState(value) {
-  const snapshot = structuredClone(cleanState(value));
-  // Serialized saves prevent the slowest earlier transaction from overwriting the newest state.
+  const snapshot = cleanState(value);
+  snapshot.savedAt = Date.now();
+  const serialized = JSON.stringify(snapshot);
+  // Queue writes to avoid an older transaction overwriting a newer one.
   latestSave = latestSave.catch(() => {}).then(async () => {
-    try { await dbWrite(snapshot); return 'indexeddb'; }
-    catch { localStorage.setItem(FALLBACK, JSON.stringify(snapshot)); return 'localStorage'; }
+    try {
+      await dbWrite(snapshot);
+      // Secondary recovery copy, used when IndexedDB is temporarily blocked.
+      try { localStorage.setItem(FALLBACK, serialized); } catch { /* IndexedDB already succeeded. */ }
+      return 'indexeddb';
+    } catch {
+      localStorage.setItem(FALLBACK, serialized);
+      return 'localStorage';
+    }
   });
   return latestSave;
 }
