@@ -21,7 +21,8 @@ def wait_ready(page, errors):
         page.locator(".weapon-card").first.wait_for(timeout=15000)
     except Exception:
         raise AssertionError("Tracker startup failed. Browser errors: " + repr(errors) +
-            " | body=" + page.locator("body").inner_text()[:500])
+            " | body=" + page.locator("body").inner_text()[:500] +
+            " | scripts=" + str(page.evaluate("Array.from(document.scripts).map(x=>({src:x.src,type:x.type}))")))
     if errors:
         raise AssertionError("Browser errors: " + repr(errors))
 
@@ -35,7 +36,10 @@ def main():
             browser = p.chromium.launch(headless=True)
             page = browser.new_page(viewport={"width": 375, "height": 812})
             errors = []
-            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.on("pageerror", lambda error: errors.append("JS: " + str(error)))
+            page.on("console", lambda msg: errors.append("Console: " + msg.text) if msg.type == "error" else None)
+            page.on("requestfailed", lambda request: errors.append("Request failed: " + request.url + " " + str(request.failure)))
+            page.on("response", lambda response: errors.append("HTTP " + str(response.status) + ": " + response.url) if response.status >= 400 and response.url.startswith(url) else None)
             page.goto(url, wait_until="domcontentloaded")
             wait_ready(page, errors)
             print("Startup passed with IndexedDB")
