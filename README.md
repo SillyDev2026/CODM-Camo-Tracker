@@ -128,3 +128,15 @@ The **Custom** option is always available and is intentionally not claimed as ve
 - Corrects loading placeholders and counts to avoid empty panels while initial scripts are starting.
 - Installs the service worker using a small core asset list and caches licensed 3D models only when requested; failures downloading optional GLB assets no longer prevent new app versions from activating.
 - Browser smoke tests now verify >100 weapon cards, all category navigation, four progress cards, season completion status, small-screen readable focus cards, and an explicit recovery panel when the main module is blocked.
+
+## v1.7.0 — Personal Gunsmith library for every firearm
+
+**Every firearm in the tracker (over 100 guns)** now has a durable, weapon-specific attachment collection, including firearms without reviewed community attachments. When editing a firearm's Gunsmith, select an attachment slot → **Add an attachment for this gun** → enter the exact name shown in COD Mobile. The name is added both to the equipped preset and to your **My weapon-specific attachments** collection, ready to select from the same dropdown on **any of the three presets for that same weapon**. Other weapons never inherit the name. Removing a name from the personal collection does not erase equipped builds. Multiple player profiles maintain independent collections. The existing five-slot limit remains enforced.
+
+The website **does not invent compatibility or weapon stats**. Researched attachment choices remain strictly per-weapon, labelled as reviewed community examples rather than as a complete live inventory. A fully documented **Rytec AMR** attachment list across eight categories is added from Zilliongamer's Rytec AMR Gunsmith attachments reference. There are currently **25 weapons with researched community lists**; all other firearms have the fully functional, per-gun custom collection and Empty choice, but **not yet a complete curated CODM dropdown inventory**. This distinction is intentional for correctness.
+
+**Build goals:** Each saved preset can be labelled Balanced, Low recoil, Fast ADS/movement, Long range, Hip-fire or Stealth, with non-numeric tuning guidance. The goal is carried in CamoVault CV1 build-share codes. Gunsmith stats continue to be manually entered from the game. No fake numerical stat predictions or CODM-compatible share codes are generated.
+
+**Persistence:** The new `attachmentLibrary` object is sanitized per exact firearm ID; it is included in the unchanged v1 profile schema, local IndexedDB and localStorage fallback, JSON backup/restore and optional GitHub backup. Legacy profiles without this field load as empty libraries without losing their camo or build data. The offline cache includes the two light modules needed for profile deserialization, but still defers optional heavy 3D assets.
+
+**Adding official choices:** Update `js/attachments.js` with sourced names in the exact gun ID; generic class-wide lists are intentionally forbidden. Review names in the live game before promoting a player-entered part to the researched lists.
