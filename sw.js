@@ -1,5 +1,5 @@
 // Caches only this site's public files. No data, credentials, or GitHub API calls are cached.
-const CACHE = 'camovault-assets-v1.4.0';
+const CACHE = 'camovault-assets-v1.4.1';
 const FILES = ['./', './index.html', './assets/style.css', './assets/favicon.svg', './js/catalog.js', './data/seasonal-weapons.json', './js/storage.js', './js/github.js', './js/token-vault.js', './js/app.js', './js/enhancements.js', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
@@ -23,7 +23,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetch(request).then(response => {
       if (response.ok) { const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(request, copy)); }
       return response;
-    }).catch(() => caches.match(request)));
+    }).catch(() => caches.match(request, {ignoreSearch:true})));
     return;
   }
   // Network first for scripts, styles, and catalog data to prevent mixed-version startup.
@@ -34,8 +34,8 @@ self.addEventListener('fetch', event => {
         event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
       }
       return response;
-    }).catch(() => caches.match(request)));
+    }).catch(() => caches.match(request, {ignoreSearch:true})));
     return;
   }
-  event.respondWith(caches.match(request).then(saved => saved || fetch(request)));
+  event.respondWith(caches.match(request, {ignoreSearch:true}).then(saved => saved || fetch(request)));
 });

@@ -63,3 +63,11 @@ The app loads the local save and weapon catalog before requesting upcoming seaso
 - **Continue grinding** returns to your most recently updated weapon for the selected mode. New-season and recently edited weapon filters help reduce scrolling.
 - The site remembers the chosen mode and category in local browser storage. Weapon progress remains in the existing v1 IndexedDB database and continues to work with JSON/GitHub backups.
 - The official blog checker opens human-review issues for new season announcements; it does **not** scrape Activision user accounts or automatically invent new guns. Admins add new approved season entries to the manifest without app-code changes.
+
+## v1.4.1 — UI and data reliability
+
+- Fixes missing quick Gold/Aether/favorite controls after searching, sorting, or filtering weapons.
+- Camo and favorite changes save immediately; notes are debounced to reduce storage writes.
+- Chooses the newest valid IndexedDB/localStorage save, mirrors successful saves to a fallback when possible, and does not silently reset damaged or blocked storage.
+- Offline cache matches versioned JavaScript/CSS URLs even if their query strings change.
+- Browser regression tests cover filtering, UI responsiveness and recovery.
