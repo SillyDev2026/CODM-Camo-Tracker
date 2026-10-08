@@ -70,7 +70,9 @@ def main():
             page.locator('[data-quick="smg:qq9"]').click()
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold quick toggle failed"
+            page.locator('#weaponNotes').fill('Note saved when drawer is closed')
             page.locator('[data-action="close-drawer"]').click()
+            page.wait_for_timeout(180)
             page.locator('[data-mode="zombies"]').last.click()
             page.locator('[data-weapon="smg:qq9"]').click()
             page.locator('input[data-zombie-check="aetherCrystal"]').check()
@@ -84,6 +86,7 @@ def main():
             page.locator('[data-mode="mp"].mode-tab').click()
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold data lost on reload"
+            assert page.locator('#weaponNotes').input_value() == 'Note saved when drawer is closed', "Notes were lost after editor close"
             page.locator('[data-action="close-drawer"]').click()
             page.locator('[data-mode="zombies"]').last.click()
             page.locator('[data-weapon="smg:qq9"]').click()
