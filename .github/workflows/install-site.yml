@@ -2,39 +2,27 @@ name: Install CamoVault site
 on:
   push:
     paths:
-      - camovault-bundle.txt
+      - 'CamoVault-GitHub-Pages-v1.0.zip'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  unpack:
+  install:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
-      - name: Unpack original website files
-        shell: bash
+      - name: Extract CamoVault source files
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import json, zlib, base64
-          contents = Path("camovault-bundle.txt").read_text(encoding="utf-8").strip()
-          files = json.loads(zlib.decompress(base64.b64decode(contents)))
-          for name, body in files.items():
-              path = Path(name)
-              if path.is_absolute() or ".." in path.parts:
-                  raise ValueError("Unsafe bundle path")
-              path.parent.mkdir(parents=True, exist_ok=True)
-              path.write_text(body, encoding="utf-8")
-              print("Installed", name)
-          PY
-      - name: Commit deployed site files
-        shell: bash
+          test -f CamoVault-GitHub-Pages-v1.0.zip
+          unzip -o CamoVault-GitHub-Pages-v1.0.zip -d .
+          test -f index.html
+          test -f js/app.js
+          test -f assets/style.css
+      - name: Commit installed website files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Deploy CamoVault website files"
+          git commit -m "Install CamoVault static site"
           git push
