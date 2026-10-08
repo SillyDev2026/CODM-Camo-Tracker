@@ -471,3 +471,17 @@ button{touch-action:manipulation}
  .season-hub h2{font-size:clamp(23px,7vw,32px);overflow-wrap:anywhere}
  .armory-quick-head{margin-bottom:10px}
 }
+
+
+/* v1.7: personal, isolated weapon attachment collections and build priorities. */
+.gs-focus-tip{padding:10px 12px;border-left:3px solid #b6ea68;margin:0 0 14px;background:#20332f;color:#d5e3d5;font-size:11px;line-height:1.55;border-radius:0 8px 8px 0}
+.gs-personal-library{padding:12px;margin:10px 0 18px;background:#152e30;border:1px solid #3d6560;border-radius:10px}
+.gs-personal-library .gs-section-head{flex-wrap:wrap;margin-bottom:8px}
+.gs-personal-library .gs-section-head strong{font-size:10px}
+.gs-personal-library .gs-hint{font-size:10px;color:#a7c2b8}
+.gs-library-parts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;max-width:100%;min-width:0}
+.gs-library-chip{display:inline-flex;align-items:center;gap:3px;min-width:0;max-width:100%;padding:5px 6px 5px 9px;border:1px solid #54716a;background:#223c3b;border-radius:8px;color:#e4f2eb;font-size:10px;line-height:1.4}
+.gs-library-chip>span{overflow-wrap:anywhere;min-width:0}
+.gs-library-chip button{display:grid;place-items:center;flex-shrink:0;width:25px;height:25px;background:#324e49;border:1px solid #658079;border-radius:6px;color:#f3e9db;font-weight:900;font-size:14px}
+.gs-library-chip button:focus-visible{outline:2px solid #c9fb55;outline-offset:2px}
+@media(max-width:425px){.gs-personal-library{padding:10px}.gs-library-chip{font-size:9px}.gs-focus-tip{font-size:10px}}
