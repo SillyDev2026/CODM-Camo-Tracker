@@ -1,5 +1,5 @@
 import { SLOT_NAMES, STAT_NAMES, MAX_ATTACHMENTS, defaultBuild, sanitizeBuild, assignAttachment, updateBuildDetail, slotsFor, roleFor } from './loadouts.js';
-import { attachmentChoices, attachmentCoverage } from './attachments.js';
+import { attachmentChoices, attachmentCoverage, isListedAttachment } from './attachments.js';
 import { exportBuildCode, importBuildCode } from './build-share.js';
 import { startWeaponViewer } from './weapon-viewer.js';
 // Native CODM codes and CamoVault CV1 codes are intentionally separate.
@@ -24,7 +24,7 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
  function choicesMarkup(slot,selected){
   const data=attachmentChoices(weapon.id,slot),custom=Boolean(selected&&!data.choices.includes(selected));
   const options=['<option value="">— Empty slot —</option>',...data.choices.map(name=>'<option value="'+safe(name)+'"'+(name===selected?' selected':'')+'>'+safe(name)+'</option>'),'<option value="__custom__"'+(custom?' selected':'')+'>＋ Custom / unlisted attachment…</option>'];
-  const note=data.verifiedSlot?'Weapon-specific examples':data.specific?'No verified choices for this slot':'Common suggestions · fit not verified';
+  const note=data.verifiedSlot?'Documented for this weapon · partial list':data.specific?'No researched choices for this slot — custom only':'Uncatalogued weapon — custom entry only';
   return '<label class="gs-slot"><span>'+safe(SLOT_NAMES[slot])+'</span><select data-gs-slot="'+slot+'" aria-label="'+safe(SLOT_NAMES[slot])+' attachment">'+options.join('')+'</select><input type="text" data-gs-custom="'+slot+'" maxlength="64" autocomplete="off" placeholder="Type actual in-game attachment" value="'+(custom?safe(selected):'')+'"'+(custom?'':' hidden')+'><small>'+safe(note)+'</small></label>';
  }
  function redraw(){
@@ -48,11 +48,12 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
   }).join('');
   $('gunsmithCoverage').textContent=coverage.label;
   $('gunsmithCoverage').classList.toggle('is-specific',coverage.verified);
-  $('gunsmithSource').href=coverage.source;
-  $('gunsmithSource').textContent=coverage.verified?'View weapon reference ↗':'View common attachment reference ↗';
+  $('gunsmithSource').hidden=!coverage.source;
+  if(coverage.source)$('gunsmithSource').href=coverage.source;
+  $('gunsmithSource').textContent='Weapon attachment source ↗';
   $('gunsmithInfo').textContent=coverage.verified?
-   'Choices shown are researched examples, NOT a complete weapon inventory. Choose Custom for other actual in-game attachments.' :
-   'The suggestions are not verified for this specific weapon. Check your in-game Gunsmith before using them, or choose Custom.';
+   'Dropdowns contain ONLY attachment examples documented for '+weapon.name+'. These lists are incomplete. Choose Custom for another attachment you confirmed in the game.' :
+   'No researched attachment names are available yet for '+weapon.name+'. Cross-weapon suggestions are disabled. Select Custom and enter exactly what you see in-game.';
  }
  function show(w,trigger=null){
   if(!w)return;
@@ -129,6 +130,8 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
     if(el.value==='__custom__'){
      const input=modal.querySelector('input[data-gs-custom="'+slot+'"]');
      if(input){input.hidden=false;input.focus();}
+    }else if(el.value && !isListedAttachment(weapon.id,slot,el.value)){
+     throw Error('This attachment is not listed for '+weapon.name+'. Use Custom to record an attachment you verified in-game.');
     }else save(assignAttachment(build,weapon.category,slot,el.value));
    }else if(el.dataset.gsCustom!==undefined){
     save(assignAttachment(build,weapon.category,el.dataset.gsCustom,el.value));
