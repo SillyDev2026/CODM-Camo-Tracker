@@ -1,5 +1,5 @@
 import { SLOT_NAMES, STAT_NAMES, MAX_ATTACHMENTS, defaultBuild, sanitizeBuild, assignAttachment, updateBuildDetail, slotsFor, roleFor } from './loadouts.js';
-import { attachmentChoices, attachmentCoverage, isListedAttachment } from './attachments.js';
+import { attachmentChoices, attachmentCoverage, isListedAttachment, recommendedBuilds } from './attachments.js';
 import { exportBuildCode, importBuildCode } from './build-share.js';
 import { startWeaponViewer } from './weapon-viewer.js';
 import { attachmentListFor, weaponLibrary, BUILD_FOCUS, buildTip } from './attachment-library.js';
@@ -49,6 +49,11 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
   $('gunsmithRole').textContent=roleFor(weapon.category);
   $('gunsmithCapacity').textContent=used+' / '+MAX_ATTACHMENTS+' ATTACHMENTS';
   $('gunsmithPresets').innerHTML=build.presets.map((item,i)=>'<button type="button" class="gs-preset '+(i===build.active?'active':'')+'" data-gs-preset="'+i+'" aria-pressed="'+(i===build.active)+'">'+safe(item.name)+'</button>').join('');
+  const examples=recommendedBuilds(weapon.id);
+  $('gunsmithExamples').innerHTML=examples.length?
+   examples.map((item,i)=>'<button type="button" class="gs-example" data-gs-example="'+i+'" title="A documented example, not live game data">'+safe(item.name)+'</button>').join(''):
+   '<span class="gs-hint">No researched build available yet for this gun. Create a personal build from its attachment menus.</span>';
+
   $('gunsmithSlots').innerHTML=slots.length?slots.map(slot=>choicesMarkup(slot,p.slots[slot]||'')).join(''):'<div class="gs-no-slots">No standard five-slot Gunsmith system verified for this category. Notes and build codes remain available.</div>';
   $('gunsmithMyParts').innerHTML=myAttachmentMarkup();
   $('gunsmithFocus').value=p.focus||'balanced';
@@ -110,6 +115,17 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
   if(b.dataset.gsPreset!==undefined){
    flushNotes();const next=sanitizeBuild(build,weapon.category);next.active=Number(b.dataset.gsPreset);save(next);return;
   }
+  if(b.dataset.gsExample!==undefined){
+   const example=recommendedBuilds(weapon.id)[Number(b.dataset.gsExample)];
+   if(!example)return;
+   flushNotes();
+   if(!confirm('Apply '+example.name+' to this preset? This changes only its five attachments and name; other presets, camos, notes and codes remain unchanged.'))return;
+   const next=sanitizeBuild(build,weapon.category);
+   next.presets[next.active].slots={...example.slots};
+   next.presets[next.active].name=example.name.slice(0,32);
+   save(next);report('Researched example applied; check attachment availability in CODM.');
+   return;
+  }
   if(b.dataset.gsViewer){
    const which=b.dataset.gsViewer;
    if(which==='reset'){viewer?.reset();const spin=modal.querySelector('[data-gs-viewer="spin"]');spin?.setAttribute('aria-pressed','false');if(spin)spin.textContent='Auto rotate';}
@@ -150,7 +166,7 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
     if(el.value==='__custom__'){
      const input=modal.querySelector('input[data-gs-custom="'+slot+'"]');
      if(input){input.hidden=false;input.focus();}
-    }else if(el.value && !isListedAttachment(weapon.id,slot,el.value)){
+    }else if(el.value && !isListedAttachment(weapon.id,slot,el.value) && !attachmentListFor(getLibrary?.(),weapon.id,slot).includes(el.value)){
      throw Error('This attachment is not listed for '+weapon.name+'. Use Custom to record an attachment you verified in-game.');
     }else save(assignAttachment(build,weapon.category,slot,el.value));
    }else if(el.dataset.gsCustom!==undefined){

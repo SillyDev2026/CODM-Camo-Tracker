@@ -11,21 +11,6 @@ export const defaultBuild=()=>({active:0,presets:[1,2,3].map(i=>({name:'Build '+
 const obj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
 export function sanitizeBuild(raw,category){
  const value=obj(raw)?raw:{},presets=Array.isArray(value.presets)?value.presets:[];
- // Each gun has a separate saved attachment library; it never transfers to
- // another weapon and survives all three presets and backup roundtrips.
- const library={};
- if(obj(value.library))for(const slot of slotsFor(category)){
-  const rawList=value.library[slot];
-  if(!Array.isArray(rawList))continue;
-  const clean=[];
-  for(const item of rawList){
-   if(typeof item!=='string')continue;
-   const name=item.trim().slice(0,64);
-   if(name&&!clean.includes(name))clean.push(name);
-   if(clean.length>=40)break;
-  }
-  if(clean.length)library[slot]=clean;
- }
  return {active:Number.isInteger(value.active)?Math.max(0,Math.min(2,value.active)):0,library,presets:[0,1,2].map(i=>{
   const p=obj(presets[i])?presets[i]:{},slots={},stats={},allowed=slotsFor(category);
   if(obj(p.slots))for(const slot of allowed) {
@@ -71,24 +56,3 @@ export function updateBuildDetail(build,category,field,value){
  return next;
 }
 
-export function rememberAttachment(build,category,slot,label){
- const next=sanitizeBuild(build,category);
- if(!slotsFor(category).includes(slot))throw Error('Unsupported attachment slot');
- const value=String(label??'').trim().slice(0,64);
- if(!value)throw Error('Enter the exact in-game attachment name');
- const list=next.library[slot]||[];
- if(!list.includes(value)){
-  if(list.length>=40)throw Error('This weapon slot has reached its 40 saved-name limit');
-  next.library[slot]=[...list,value];
- }
- return next;
-}
-export function forgetAttachment(build,category,slot,label){
- const next=sanitizeBuild(build,category);
- if(next.library[slot]){
-  next.library[slot]=next.library[slot].filter(item=>item!==label);
-  if(!next.library[slot].length)delete next.library[slot];
- }
- // Equipped attachments remain intact. Only the reusable list changes.
- return next;
-}
