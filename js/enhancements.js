@@ -32,6 +32,7 @@ export function decorateWeaponCards(mode,progress){
   const actions=document.createElement('div');actions.className='weapon-actions';
   const quick=document.createElement('button');quick.type='button';quick.className='quick-action '+(done?'active ':'')+(mode==='zombies'?'zombies':'');quick.dataset.quick=id;quick.setAttribute('aria-pressed',String(done));quick.textContent=mode==='zombies'?(done?'✓ Aether':'Mark Aether'):(done?'✓ Gold':'Mark Gold');
   const favorite=document.createElement('button');favorite.type='button';favorite.className='favorite-button '+(e.favorite?'active':'');favorite.dataset.fav=id;favorite.setAttribute('aria-label',(e.favorite?'Remove favorite: ':'Favorite: ')+card.querySelector('.weapon-title')?.textContent);favorite.textContent=e.favorite?'★':'☆';
-  actions.append(quick,favorite);wrap.append(actions);
+  const build=document.createElement('button');build.type='button';build.className='quick-action weapon-build-button';build.dataset.build=id;build.textContent='Build / 3D';build.setAttribute('aria-label','Open Gunsmith builder and 3D preview for '+(card.querySelector('.weapon-title')?.textContent||id));
+  actions.append(quick,build,favorite);wrap.append(actions);
  }
 }
