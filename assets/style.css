@@ -440,3 +440,7 @@ button{touch-action:manipulation}
 .gs-share-panel .gs-hint{margin:3px 0 8px;font-size:10px}
 .gs-editor{overscroll-behavior:contain}
 @media(max-width:425px){.gs-share-panel{padding:11px}.gs-coverage{font-size:9px}.gs-slots{grid-template-columns:1fr}.gs-share-mode{align-items:flex-start}}
+
+/* Save mode selectors share the same accessible design as attachment selectors. */
+.gs-title-input select{width:100%;min-width:0;min-height:40px;background:#0c1b21;border:1px solid #426255;border-radius:7px;padding:10px;color:#eff7ed;font-size:12px}
+.gs-title-input select:focus-visible{outline:2px solid #c9fb55;outline-offset:1px}
