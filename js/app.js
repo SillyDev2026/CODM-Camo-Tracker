@@ -49,11 +49,12 @@ function setSaveBadge(text, hasError = false) {
 function persist(debounce = false) {
   setSaveBadge('Saving…');
   clearTimeout(saveTimer);
+  saveTimer = null;
   const write = async () => {
     try { const provider = await saveState(state); setSaveBadge(provider === 'indexeddb' ? 'Saved locally' : 'Saved (fallback)'); }
     catch { setSaveBadge('Save failed — export now', true); toast('Saving failed. Export a backup immediately.', 5200); }
   };
-  if (debounce) saveTimer = setTimeout(write, 350);
+  if (debounce) saveTimer = setTimeout(() => { saveTimer = null; void write(); }, 350);
   else void write();
 }
 function mutate(id, apply, repaintDrawer = false, debounce = false) {
@@ -209,6 +210,7 @@ function openDrawer(id) {
   $('weaponDrawer').querySelector('[data-action="close-drawer"]').focus();
 }
 function closeDrawer() {
+  if (saveTimer !== null && saveTimer !== undefined) persist();
   selectedId = null;
   $('drawerBackdrop').hidden = true; $('weaponDrawer').hidden = true;
   activeDialog = null;
@@ -398,6 +400,9 @@ function bindEvents() {
   $('drawerInner').addEventListener('input', event => {
     if (event.target.id === 'weaponNotes' && selectedId) mutate(selectedId, e => { e.notes = event.target.value.slice(0, 800); }, false, true);
   });
+  $('drawerInner').addEventListener('focusout', event => {
+    if (event.target.id === 'weaponNotes' && saveTimer != null) persist();
+  });
   $('weaponSearch').addEventListener('input', renderWeaponGrid);
   $('sortBy').addEventListener('change', renderWeaponGrid);
   $('profileSelect').addEventListener('change', event => {
@@ -436,7 +441,10 @@ async function boot() {
   // Existing profiles are always read first. Never wipe IndexedDB to recover from UI errors.
   await saveState(state).then(() => setSaveBadge('Saved locally')).catch(() => setSaveBadge('Storage unavailable — export a backup', true));
   refreshSeasonCatalog();
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden && Date.now()-lastSeasonRefresh>10*60*1000)refreshSeasonCatalog();});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden && saveTimer != null) persist();
+    if(!document.hidden && Date.now()-lastSeasonRefresh>10*60*1000)refreshSeasonCatalog();
+  });
   setInterval(()=>{if(!document.hidden)refreshSeasonCatalog();},30*60*1000);
 }
 boot().catch(error => {
