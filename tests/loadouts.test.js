@@ -48,7 +48,7 @@ test('sanitization removes malformed slots and untrusted profile entries',()=>{
  assert.deepEqual(Object.keys(b),['smg:qq9']);
  assert.equal(b['smg:qq9'].active,2);
  assert.equal(Object.keys(b['smg:qq9'].presets[0].slots).length,5);
- assert.equal(b['smg:qq9'].presets[0].stats.Damage,100);
+ assert.equal(b['smg:qq9'].presets[0].stats.Damage,150);
 });
 test('legacy camo profiles and new builds both survive full JSON backup normalization',()=>{
  const state=freshState();
@@ -60,4 +60,10 @@ test('legacy camo profiles and new builds both survive full JSON backup normaliz
  assert.equal(clean.profiles[0].builds['smg:qq9'].presets[0].slots.optic,'Red Dot');
  const legacy=cleanProfile({id:'profile123',name:'Old',progress:{'ar:m4':{gold:true}}});
  assert.deepEqual(legacy.builds,{});
+});
+
+test('manually entered CODM stats can exceed 100 without being overwritten',()=>{
+ let p=updateBuildDetail(defaultBuild(),'smg','Mobility',102);
+ assert.equal(p.presets[0].stats.Mobility,102);
+ assert.equal(sanitizeBuild(p,'smg').presets[0].stats.Mobility,102);
 });
