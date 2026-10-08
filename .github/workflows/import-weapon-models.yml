@@ -1,0 +1,36 @@
+name: Import licensed Gunsmith 3D models
+on:
+  push:
+    paths:
+      - '.github/workflows/import-weapon-models.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gun-model-import
+  cancel-in-progress: false
+jobs:
+  import-models:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out CamoVault
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve public-domain models from pinned source revisions
+        run: python scripts/import_models.py
+      - name: Commit licensed GLB assets to this repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/models/*.glb
+          if git diff --cached --quiet; then
+            echo "Models are already in sync."
+          else
+            git commit -m "Import 9 licensed CC0 Gunsmith GLB models"
+            git push origin HEAD:main
+          fi
