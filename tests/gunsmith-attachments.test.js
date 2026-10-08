@@ -20,7 +20,7 @@ test('every firearm uses only its own weapon-specific attachment choices',()=>{
  }
 });
 test('researched lists are weapon-specific and never imply full coverage',()=>{
- assert.ok(COVERED_WEAPON_IDS.length>=24);
+ assert.ok(COVERED_WEAPON_IDS.length>=31);
  const rytec=attachmentChoices('sniper:rytec-amr','ammunition');
  assert.deepEqual(rytec.choices,['25x59mm Thermite Mag','25x29mm Explosive Mag']);
  assert.equal(rytec.complete,false);
@@ -31,12 +31,12 @@ test('researched lists are weapon-specific and never imply full coverage',()=>{
  const cordite=attachmentChoices('smg:cordite','ammunition');
  assert.ok(cordite.choices.includes('80 Round Extended Mag'));
  assert.equal(attachmentChoices('smg:static-hv','barrel').choices.includes('Supe-SIL Suppressed Barrel'),true);
- assert.equal(attachmentChoices('smg:rus-79u','ammunition').specific,false);
- assert.deepEqual(attachmentChoices('smg:rus-79u','ammunition').choices,[]);
+ assert.equal(attachmentChoices('smg:rus-79u','ammunition').specific,true);
+ assert.ok(attachmentChoices('smg:rus-79u','ammunition').choices.includes('50 Round Extended Mag'));
  assert.deepEqual(attachmentChoices('smg:rus-79u','optic').choices,[]);
  assert.equal(attachmentCoverage('smg:qq9').verified,true);
  assert.equal(attachmentCoverage('smg:static-hv').verified,true);
- assert.equal(attachmentCoverage('smg:rus-79u').verified,false);
+ assert.equal(attachmentCoverage('smg:rus-79u').verified,true);
  assert.equal(qq9.complete,false);
  assert.equal(isListedAttachment('smg:qq9','ammunition','10mm 30 Round Reload'),true);
  assert.equal(isListedAttachment('smg:fennec','ammunition','10mm 30 Round Reload'),false);
@@ -102,7 +102,7 @@ test('dropdowns never inherit unrelated weapon choices from the same class',()=>
   assert.ok(attachmentChoices(source,slot).choices.includes(value));
   assert.ok(!attachmentChoices(other,slot).choices.includes(value));
  }
- assert.equal(attachmentCoverage('smg:rus-79u').source,null);
+ assert.match(attachmentCoverage('smg:rus-79u').source,/rus-79u/);
 });
 test('partial weapon-specific catalog never deletes older user-entered names',()=>{
  let p=assignAttachment(defaultBuild(),'smg','ammunition','Uncatalogued CODM Mag');
@@ -110,4 +110,20 @@ test('partial weapon-specific catalog never deletes older user-entered names',()
  const restored=sanitizeBuild(JSON.parse(JSON.stringify(p)),'smg');
  assert.equal(restored.presets[0].slots.ammunition,'Uncatalogued CODM Mag');
  assert.equal(restored.presets[0].slots.muzzle,'Custom Muzzle');
+});
+
+test('new researched weapon-specific choices are safe and isolated',()=>{
+ const examples=[
+  ['smg:rus-79u','ammunition','50 Round Extended Mag','smg:qq9'],
+  ['ar:ak117','ammunition','40 Round Extended Mag','ar:dr-h'],
+  ['ar:dr-h','ammunition','25 Round OTM Mag','ar:ak117'],
+  ['smg:mac-10','ammunition','STANAG 53 Round Extended Reload','smg:gks'],
+  ['smg:gks','ammunition','32 Round Fast Reload','smg:mac-10'],
+  ['shotgun:krm-262','muzzle','Marauder Suppressor','smg:gks'],
+  ['sniper:rytec-amr','ammunition','25x59mm Thermite Mag','sniper:dl-q33']
+ ];
+ for(const [id,slot,value,other] of examples){
+  assert.ok(attachmentChoices(id,slot).choices.includes(value),id+' missing own attachment');
+  assert.ok(!attachmentChoices(other,slot).choices.includes(value),id+' attachment leaked into '+other);
+ }
 });
