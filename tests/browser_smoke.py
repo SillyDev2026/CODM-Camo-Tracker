@@ -146,6 +146,10 @@ def main():
             page.locator('[data-gs-preset="1"]').click()
             page.locator('[data-gs-slot="ammunition"]').select_option("My RUS Magazine")
             assert page.locator('[data-gs-slot="ammunition"]').input_value()=="My RUS Magazine", "Personal part could not be selected in another preset"
+            page.once("dialog", lambda dialog: dialog.accept())
+            page.locator('[data-gs-example="0"]').click()
+            assert page.locator("#gunsmithCapacity").inner_text().startswith("5 / 5"), "Researched five-part loadout did not apply"
+            assert "My RUS Magazine" in page.locator("#gunsmithMyParts").inner_text(), "Preset must not erase personal gun library"
             page.locator("#gunsmithClose").click()
             page.locator("#weaponSearch").fill("PDW-57")
             page.locator('[data-build="smg:pdw-57"]').click()

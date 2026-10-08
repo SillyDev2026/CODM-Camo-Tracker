@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WEAPONS } from '../js/catalog.js';
-import { attachmentChoices, attachmentCoverage, COVERED_WEAPON_IDS, isListedAttachment } from '../js/attachments.js';
+import { attachmentChoices, attachmentCoverage, COVERED_WEAPON_IDS, isListedAttachment, recommendedBuilds } from '../js/attachments.js';
 import { exportBuildCode, importBuildCode } from '../js/build-share.js';
 import { assignAttachment, defaultBuild, sanitizeBuild, updateBuildDetail, slotsFor } from '../js/loadouts.js';
 import { cleanState, freshState } from '../js/storage.js';
@@ -126,4 +126,20 @@ test('new researched weapon-specific choices are safe and isolated',()=>{
   assert.ok(attachmentChoices(id,slot).choices.includes(value),id+' missing own attachment');
   assert.ok(!attachmentChoices(other,slot).choices.includes(value),id+' attachment leaked into '+other);
  }
+});
+
+test('research-backed build examples fit only their own weapon and CODM five-part limit',()=>{
+ const weapons=['smg:rus-79u','ar:ak117','ar:dr-h','smg:mac-10','smg:gks','shotgun:krm-262'];
+ for(const id of weapons){
+  const suggestions=recommendedBuilds(id);
+  assert.ok(suggestions.length>0,id+' lacks a researched template');
+  for(const entry of suggestions){
+   assert.match(entry.source,/^https:\/\//);
+   assert.ok(Object.keys(entry.slots).length>=1&&Object.keys(entry.slots).length<=5);
+   for(const [slot,label] of Object.entries(entry.slots)){
+    assert.ok(isListedAttachment(id,slot,label),id+' '+slot+' '+label+' not listed for this gun');
+   }
+  }
+ }
+ assert.deepEqual(recommendedBuilds('smg:pdw-57'),[]);
 });
