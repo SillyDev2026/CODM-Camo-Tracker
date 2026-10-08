@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "description": "Approved upcoming weapons from official CODM season announcements. Weapons activate automatically at releaseAt (UTC). Do not include scorestreaks, equipment, or blueprints.",
+  "weapons": [
+    {
+      "name": "Grav",
+      "category": "ar",
+      "season": "2026 Season 9 — Vampires vs Werewolves",
+      "releaseAt": "2026-10-15T00:00:00Z",
+      "source": "https://www.callofduty.com/blog/2026/10/call-of-duty-mobile-season-9-vampires-werewolves"
+    }
+  ]
+}

@@ -10,6 +10,8 @@ export const GROUPS = [
   { id: 'melee', name: 'Melee', short: 'MELEE', target: 500, targetUnit: 'kills', weapons: `Base Melee|Knife|Axe|Baseball Bat|Katana|Shovel|Sickle|Wrench|Machete|Prizefighters|Nunchucks|Kali Sticks|Butterfly Knife|Sai|Ballistic Knife|Spear` },
   { id: 'launcher', name: 'Launchers', short: 'LAUNCHER', target: 100, targetUnit: 'objectives', weapons: `SMRS|FHJ-18|Thumper|D13 Sector` }
 ];
+export const AETHER_KILLS = Object.freeze({ ar: 25, smg: 25, lmg: 25, pistol: 15, shotgun: 12, sniper: 8, marksman: 8 });
+export const AETHER_MATCHES = 6;
 export const BASIC_CAMOS = ['Sand', 'Dragon', 'Splinter', 'Tiger', 'Jungle', 'Reptile'];
 export const COMPLETIONIST = ['gold', 'platinum', 'damascus', 'diamond'];
 export const WEAPONS = GROUPS.flatMap(group => group.weapons.split('|').map(name => ({
@@ -33,4 +35,44 @@ export function weaponCompletion(entry) {
   const basics = BASIC_CAMOS.filter(camo => entry?.base?.[camo]).length;
   // Marking Gold implies all basic challenge families have been completed.
   return (entry?.gold ? 6 : basics) + COMPLETIONIST.filter(key => entry?.[key]).length;
+}
+
+const ROSTER_IDS = new Set(WEAPONS.map(weapon => weapon.id));
+export function weaponId(category, name) {
+  return `${category}:${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+}
+export function validateSeasonalCatalog(payload) {
+  if (!payload || payload.version !== 1 || !Array.isArray(payload.weapons) || payload.weapons.length > 100) throw new Error('Invalid seasonal weapon manifest');
+  const seen = new Set();
+  return payload.weapons.map(item => {
+    if (!item || !GROUP_BY_ID.has(item.category) || typeof item.name !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9 .'-]{1,58}$/.test(item.name)) throw new Error('Invalid seasonal weapon entry');
+    if (typeof item.releaseAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(item.releaseAt) || !Number.isFinite(Date.parse(item.releaseAt))) throw new Error('Invalid weapon releaseAt date');
+    if (typeof item.source !== 'string' || !/^https:\/\/www\.callofduty\.com\/blog\//.test(item.source)) throw new Error('A published official CODM announcement is required');
+    const id = weaponId(item.category, item.name);
+    if (seen.has(id)) throw new Error('Duplicate seasonal weapon: ' + id);
+    seen.add(id);
+    return { id, name: item.name, category: item.category, releaseAt: item.releaseAt, source: item.source, season: String(item.season || '').slice(0,80) };
+  });
+}
+export function registerSeasonalWeapons(payload, now = Date.now()) {
+  const entries = validateSeasonalCatalog(payload);
+  let added = 0;
+  const upcoming = [];
+  for (const item of entries) {
+    if (Date.parse(item.releaseAt) > now) { upcoming.push(item); continue; }
+    if (ROSTER_IDS.has(item.id)) continue;
+    const group = GROUP_BY_ID.get(item.category);
+    group.weapons += `|${item.name}`;
+    const weapon = { id: item.id, category: item.category, name: item.name, season: item.season };
+    WEAPONS.push(weapon);
+    BY_ID.set(item.id, weapon);
+    ROSTER_IDS.add(item.id);
+    added++;
+  }
+  return { added, upcoming };
+}
+export async function loadSeasonalWeapons(fetcher = globalThis.fetch) {
+  const response = await fetcher('./data/seasonal-weapons.json', { cache: 'no-store' });
+  if (!response.ok) throw new Error('Seasonal catalog unavailable');
+  return registerSeasonalWeapons(await response.json());
 }
