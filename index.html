@@ -8,9 +8,9 @@
   <title>CamoVault Armory — COD Mobile Weapons & Camos</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/style.css?v=1.4.1">
-  <script type="module" src="js/app.js?v=1.4.1"></script>
-  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.4.1").catch(() => {}); });</script>
+  <link rel="stylesheet" href="assets/style.css?v=1.5.0">
+  <script type="module" src="js/app.js?v=1.5.0"></script>
+  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.5.0").catch(() => {}); });</script>
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -24,7 +24,7 @@
       <div class="side-bottom">
         <div class="side-note"><span class="side-note-dot"></span> LOCAL SAVE ACTIVE <small>Your progress stays on this device until you choose to back it up.</small></div>
         <button class="side-link" type="button" data-action="open-settings"><span class="side-ico">⚙</span><span>Settings & backup</span></button>
-        <div class="side-version">CAMOVAULT ARMORY v1.4.1 · UNOFFICIAL FAN TOOL</div>
+        <div class="side-version">CAMOVAULT ARMORY v1.5.0 · UNOFFICIAL FAN TOOL</div>
       </div>
     </aside>
     <main class="main-content" id="main">
@@ -46,6 +46,29 @@
   </div>
   <div id="drawerBackdrop" class="dialog-backdrop" hidden></div>
   <aside id="weaponDrawer" class="weapon-drawer" aria-label="Weapon progress editor" aria-modal="true" role="dialog" hidden><div id="drawerInner"></div></aside>
+  <div id="gunsmithBackdrop" class="dialog-backdrop gs-backdrop" hidden></div>
+  <section id="gunsmithModal" class="gunsmith-modal" role="dialog" aria-modal="true" aria-labelledby="gunsmithName" hidden>
+    <header class="gs-header"><div><span class="gs-eyebrow">GUNSMITH · BUILD LAB</span><h2 id="gunsmithName">Weapon</h2><p><span id="gunsmithClass"></span> · <span id="gunsmithRole"></span></p></div><button id="gunsmithClose" type="button" class="gs-close" aria-label="Close Gunsmith">✕</button></header>
+    <div class="gs-layout">
+      <section class="gs-view"><div class="gs-viewtop"><span>INTERACTIVE WEAPON INSPECTOR</span><span>PROCEDURAL 3D CONCEPT</span></div>
+        <canvas id="gunsmithCanvas" class="gs-canvas" role="img" aria-label="Rotatable three-dimensional concept of this weapon class, not an exact in-game model"></canvas>
+        <div class="gs-view-actions"><button type="button" data-gs-viewer="out" aria-label="Zoom out">−</button><button type="button" data-gs-viewer="in" aria-label="Zoom in">+</button><button type="button" data-gs-viewer="reset">Reset view</button><button type="button" data-gs-viewer="spin" aria-pressed="false">Auto rotate</button></div>
+        <p class="gs-hint">Drag to rotate · Two fingers to zoom · The shape is an illustrative class-based model, not an official CODM weapon asset.</p>
+        <div class="gs-stats"><div class="gs-section-head"><strong>WEAPON STATS</strong><small>Optional · copy exact 0–100 values from in-game Gunsmith</small></div><div id="gunsmithStats" class="gs-statgrid"></div></div>
+      </section>
+      <section class="gs-editor"><div class="gs-section-head"><strong>YOUR SAVED LOADOUTS</strong><small>3 presets per weapon</small></div>
+        <div id="gunsmithPresets" class="gs-presets"></div>
+        <label class="gs-title-input">Build name<input id="gunsmithBuildName" type="text" maxlength="32" placeholder="My loadout"></label>
+        <div class="gs-section-head gs-attachment-head"><strong>ATTACHMENTS</strong><small id="gunsmithCapacity">0 / 5 ATTACHMENTS</small></div>
+        <p class="gs-hint">Type the attachment name from COD Mobile for this specific weapon. Not every attachment exists on every gun.</p>
+        <div id="gunsmithSlots" class="gs-slots"></div>
+        <label class="gs-title-input">Build notes<textarea id="gunsmithNotes" maxlength="500" rows="3" placeholder="ADS speed, recoil, playstyle, favorite setup…"></textarea></label>
+        <div class="gs-actions"><button type="button" data-gs-copy="true" class="gs-primary">Copy build</button><button type="button" data-gs-clear="true" class="gs-muted">Clear attachments</button></div>
+        <p class="gs-hint">Save is automatic. Gunsmith presets are separate from your weapon camo progress and are included in JSON/GitHub profile backups.</p>
+        <p id="gunsmithInfo" class="gs-small"></p><p id="gunsmithStatus" role="status" aria-live="polite" class="gs-status"></p>
+      </section>
+    </div>
+  </section>
   <div id="modalBackdrop" class="dialog-backdrop modal-shade" hidden></div>
   <section id="settingsModal" class="settings-modal" role="dialog" aria-modal="true" aria-label="Settings and backup" hidden>
     <div class="modal-header"><div><div class="eyebrow tiny">CONTROL PANEL</div><h2>Settings & backups</h2></div><button type="button" class="icon-button" data-action="close-settings" aria-label="Close settings">✕</button></div>
