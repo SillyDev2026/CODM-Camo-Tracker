@@ -92,6 +92,7 @@ def main():
             assert code.startswith("CV1."), "CamoVault share code missing"
             page.locator("#gunsmithGameCode").fill("QQ9-1T3A5B6A7M")
             page.locator("#gunsmithGameCode").dispatch_event("change")
+            page.locator("#gunsmithGameMode").select_option("BATTLE ROYALE")
             page.locator('[data-gs-preset="2"]').click()
             page.locator("#gunsmithImportCode").fill(code)
             page.once("dialog", lambda dialog: dialog.accept())
@@ -99,6 +100,7 @@ def main():
             assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "CamoVault code import did not restore attachments"
             page.locator('[data-gs-preset="0"]').click()
             assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM game code lost"
+            assert page.locator("#gunsmithGameMode").input_value() == "BATTLE ROYALE"
             page.locator('[data-gs-stat="Accuracy"]').fill("85")
             page.locator('[data-gs-stat="Accuracy"]').dispatch_event("change")
             page.locator("#gunsmithClose").click()
@@ -125,6 +127,7 @@ def main():
             page.locator('[data-build="smg:qq9"]').click()
             assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "Saved custom attachment missing after reload"
             assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM share code not saved"
+            assert page.locator("#gunsmithGameMode").input_value() == "BATTLE ROYALE", "CODM code mode not saved"
             assert page.locator('[data-gs-stat="Accuracy"]').input_value() == "85", "Saved build stat missing after reload"
             page.locator('[data-gs-preset="1"]').click()
             assert page.locator('[data-gs-slot="muzzle"]').input_value() == "OWC Light Compensator", "Second loadout lost"

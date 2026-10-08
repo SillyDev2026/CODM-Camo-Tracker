@@ -38,6 +38,7 @@ test('CamoVault share code round trips five attachments and stats only',()=>{
  p=updateBuildDetail(p,'smg','name','Aggressive QQ9');
  p=updateBuildDetail(p,'smg','notes','Private notes must not be shared');
  p=updateBuildDetail(p,'smg','gameCode','QQ9-ABC1DEF');
+ p=updateBuildDetail(p,'smg','gameMode','BATTLE ROYALE');
  const code=exportBuildCode('smg:qq9',p);
  assert.match(code,/^CV1\.[\w-]+\.[0-9a-f]{8}$/);
  const restored=importBuildCode(code,'smg:qq9');
@@ -46,6 +47,7 @@ test('CamoVault share code round trips five attachments and stats only',()=>{
  assert.equal(restored.stats.Damage,49);
  assert.equal(restored.notes,'');
  assert.equal(restored.gameCode,'');
+ assert.equal(restored.gameMode,'BATTLE ROYALE');
  assert.doesNotMatch(code,/Private notes|QQ9-ABC1DEF/);
 });
 test('invalid, tampered, game-native and other weapon codes are rejected',()=>{
