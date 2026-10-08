@@ -7,7 +7,7 @@ const ALL=Object.keys(SLOT_NAMES),PISTOL=['muzzle','barrel','optic','perk','lase
 const ROLES={ar:'Balanced primary · adaptable for most engagements',smg:'Close range · mobility and aggressive handling',lmg:'Sustained fire · magazine capacity and stability',sniper:'Long range · precision and aiming',marksman:'Precision rifle · flexible long-range engagements',shotgun:'Short range · spread, range and mobility',pistol:'Secondary firearm · fast handling',melee:'Melee weapon · no standard five-slot Gunsmith',launcher:'Launcher · no standard five-slot Gunsmith'};
 export const roleFor=category=>ROLES[category]||'Weapon';
 export const slotsFor=category=>['melee','launcher'].includes(category)?[]:category==='pistol'?PISTOL:ALL;
-export const defaultBuild=()=>({active:0,presets:[1,2,3].map(i=>({name:'Build '+i,slots:{},stats:{},notes:'',gameCode:'',gameMode:'MULTIPLAYER'}))});
+export const defaultBuild=()=>({active:0,presets:[1,2,3].map(i=>({name:'Build '+i,slots:{},stats:{},notes:'',gameCode:'',gameMode:'MULTIPLAYER',focus:'balanced'}))});
 const obj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
 export function sanitizeBuild(raw,category){
  const value=obj(raw)?raw:{},presets=Array.isArray(value.presets)?value.presets:[];
@@ -18,7 +18,7 @@ export function sanitizeBuild(raw,category){
    if(typeof name==='string'&&name.trim()&&Object.keys(slots).length<MAX_ATTACHMENTS)slots[slot]=name.trim().slice(0,64);
   }
   if(obj(p.stats))for(const key of STAT_NAMES)if(p.stats[key]!==''&&p.stats[key]!=null&&Number.isFinite(Number(p.stats[key])))stats[key]=Math.min(999,Math.max(0,Number(p.stats[key])));
-  return {name:typeof p.name==='string'&&p.name.trim()?p.name.trim().slice(0,32):'Build '+(i+1),slots,stats,notes:typeof p.notes==='string'?p.notes.slice(0,500):'',gameCode:typeof p.gameCode==='string'&&/^[A-Za-z0-9][A-Za-z0-9-_ .]{0,110}$/.test(p.gameCode.trim())?p.gameCode.trim():'',gameMode:p.gameMode==='BATTLE ROYALE'?'BATTLE ROYALE':'MULTIPLAYER'};
+  return {name:typeof p.name==='string'&&p.name.trim()?p.name.trim().slice(0,32):'Build '+(i+1),slots,stats,notes:typeof p.notes==='string'?p.notes.slice(0,500):'',gameCode:typeof p.gameCode==='string'&&/^[A-Za-z0-9][A-Za-z0-9-_ .]{0,110}$/.test(p.gameCode.trim())?p.gameCode.trim():'',gameMode:p.gameMode==='BATTLE ROYALE'?'BATTLE ROYALE':'MULTIPLAYER',focus:['balanced','control','handling','range','hipfire','stealth'].includes(p.focus)?p.focus:'balanced'};
  })};
 }
 export function cleanBuilds(raw){
@@ -43,6 +43,7 @@ export function updateBuildDetail(build,category,field,value){
  if(field==='name')preset.name=String(value).trim().slice(0,32)||'Build '+(next.active+1);
  else if(field==='notes')preset.notes=String(value).slice(0,500);
  else if(field==='gameMode')preset.gameMode=value==='BATTLE ROYALE'?'BATTLE ROYALE':'MULTIPLAYER';
+ else if(field==='focus')preset.focus=['balanced','control','handling','range','hipfire','stealth'].includes(value)?value:'balanced';
  else if(field==='gameCode'){
   const code=String(value||'').trim().slice(0,110);
   if(code&&!/^[A-Za-z0-9][A-Za-z0-9-_ .]*$/.test(code))throw Error('CODM share code contains unsupported characters');
