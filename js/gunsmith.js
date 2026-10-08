@@ -133,15 +133,19 @@ export function createGunsmith({getBuild,onSave,onClose,notify}){
    }else if(el.dataset.gsCustom!==undefined){
     save(assignAttachment(build,weapon.category,el.dataset.gsCustom,el.value));
    }else if(el.dataset.gsStat!==undefined){
-    save(updateBuildDetail(build,weapon.category,el.dataset.gsStat,el.value));
+    save(updateBuildDetail(build,weapon.category,el.dataset.gsStat,el.value),false);
+    const bar=el.closest('.gs-stat')?.querySelector('.gs-stat-track>div');
+    if(bar)bar.style.width=Math.min(100,Math.max(0,Number(el.value)||0))+'%';
    }else if(el.id==='gunsmithBuildName'){
-    flushNotes();save(updateBuildDetail(build,weapon.category,'name',el.value));
+    flushNotes();save(updateBuildDetail(build,weapon.category,'name',el.value),false);
+    const currentButton=modal.querySelector('.gs-preset[aria-pressed="true"]');
+    if(currentButton)currentButton.textContent=current().name;
    }else if(el.id==='gunsmithGameMode'){
     if(el.dataset.modeApplied!==el.value){
-      flushNotes();save(updateBuildDetail(build,weapon.category,'gameMode',el.value));
+      flushNotes();save(updateBuildDetail(build,weapon.category,'gameMode',el.value),false);
     }
    }else if(el.id==='gunsmithGameCode'){
-    flushNotes();save(updateBuildDetail(build,weapon.category,'gameCode',el.value));
+    flushNotes();save(updateBuildDetail(build,weapon.category,'gameCode',el.value),false);
     report('Original CODM code saved; CamoVault cannot decode it into attachments.');
    }else if(el.id==='gunsmithNotes'){
     notesPending={id:weapon.id,index:build.active,value:el.value};flushNotes();
