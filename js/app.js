@@ -1,9 +1,9 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.6.3';
-import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.6.3';
-import { readCloudProfile, writeCloudProfile } from './github.js?v=1.6.3';
-import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.6.3';
-import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.6.3';
-import { createGunsmith } from './gunsmith.js?v=1.6.3';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.6.4';
+import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.6.4';
+import { readCloudProfile, writeCloudProfile } from './github.js?v=1.6.4';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.6.4';
+import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.6.4';
+// Optional 3D/Gunsmith code is loaded only when a user opens a build.
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
@@ -26,15 +26,22 @@ let saveTimer;
 let toastTimer;
 let activeDialog = null;
 let gunsmith = null;
+let gunsmithPromise = null;
 
 function saveViewPreference(){try{localStorage.setItem('camovault-view-v1',JSON.stringify({mode:currentMode,category:activeCategory}));}catch{}}
 function restoreViewPreference(){try{const v=JSON.parse(localStorage.getItem('camovault-view-v1')||'null');if(v?.mode==='zombies')currentMode='zombies';if(v?.category && GROUP_BY_ID.has(v.category)){activeCategory=v.category;currentView='category';}}catch{}}
 async function refreshSeasonCatalog(notify=false){
  if(seasonLoading)return;
  seasonLoading=true;seasonView(seasonStatus,seasonOffline,true);
- try{const fresh=await loadSeasonalWeapons();seasonStatus=fresh;lastSeasonRefresh=Date.now();seasonOffline=false;renderDashboard();if(notify)toast('Verified season roster checked');}
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),8000);
+ try{
+  const fresh=await loadSeasonalWeapons((url,options)=>fetch(url,{...options,signal:controller.signal}));
+  seasonStatus=fresh;lastSeasonRefresh=Date.now();seasonOffline=false;renderDashboard();
+  if(notify)toast('Verified season roster checked');
+ }
  catch(error){seasonOffline=true;console.warn('Season refresh failed',error);if(notify)toast('Offline: your saved camos are still available');}
- finally{seasonLoading=false;seasonView(seasonStatus,seasonOffline,false);}
+ finally{clearTimeout(timer);seasonLoading=false;seasonView(seasonStatus,seasonOffline,false);}
 }
 function profile() { return state.profiles.find(item => item.id === state.activeProfileId) || state.profiles[0]; }
 function progress() { return profile().progress; }
@@ -201,14 +208,28 @@ function renderDrawer() {
   $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Basic camo series <small>${basicDone}/6 tracked</small></div><p class="drawer-explainer">Mark each camo family after you finish its challenges. Requirements vary by weapon—check Gunsmith in-game. Gold automatically checks all six families here.</p><div class="camo-list">${bases}</div></section><section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
   $('weaponDrawer').scrollTop = oldScroll;
 }
-function openBuild(id, trigger) {
+async function openBuild(id, trigger) {
   const weapon = BY_ID.get(id);
-  if (!weapon || !gunsmith) return;
-  if (activeDialog === 'drawer') closeDrawer();
-  if (activeDialog === 'settings') closeSettings();
-  closeMenu();
-  gunsmith.open(weapon, trigger);
-  activeDialog = 'build';
+  if (!weapon) return;
+  try {
+    if (!gunsmithPromise) gunsmithPromise = import('./gunsmith.js?v=1.6.4').then(({createGunsmith}) =>
+      createGunsmith({
+        getBuild:id=>profile().builds?.[id],
+        onSave:(id,build)=>{if(!profile().builds)profile().builds={};profile().builds[id]=build;persist();},
+        onClose:()=>{activeDialog=null;},
+        notify:message=>toast(message)
+      })
+    ).catch(error => {gunsmithPromise=null;throw error;});
+    gunsmith=await gunsmithPromise;
+    if (activeDialog === 'drawer') closeDrawer();
+    if (activeDialog === 'settings') closeSettings();
+    closeMenu();
+    gunsmith.open(weapon,trigger);
+    activeDialog='build';
+  } catch(error) {
+    console.error('Optional Gunsmith failed to load',error);
+    toast('3D builder could not load. Weapon tracking still works.',5200);
+  }
 }
 function openDrawer(id) {
   if (!BY_ID.has(id)) return;
@@ -450,14 +471,9 @@ async function boot() {
   const missing = mandatory.filter(id => !$(id));
   if (missing.length) throw new Error('The website files are out of sync: ' + missing.join(', '));
   $('dateBadge').textContent = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()).toUpperCase();
-  gunsmith = createGunsmith({
-    getBuild:id=>profile().builds?.[id],
-    onSave:(id,build)=>{if(!profile().builds)profile().builds={};profile().builds[id]=build;persist();},
-    onClose:()=>{activeDialog=null;},
-    notify:message=>toast(message)
-  });
   bindEvents();
   renderDashboard();
+  document.documentElement.dataset.cvReady = 'true';
   // Existing profiles are always read first. Never wipe IndexedDB to recover from UI errors.
   await saveState(state).then(() => setSaveBadge('Saved locally')).catch(() => setSaveBadge('Storage unavailable — export a backup', true));
   refreshSeasonCatalog();
@@ -469,6 +485,7 @@ async function boot() {
 }
 boot().catch(error => {
   console.error('CamoVault initialization failed', error);
+  document.documentElement.dataset.cvBootError = String(error?.message || error);
   const notice = document.createElement('section');
   notice.setAttribute('role', 'alert');
   notice.style.cssText = 'margin:18px;padding:20px;background:#231c19;border:1px solid #9c6355;color:#fff;border-radius:12px;font:14px system-ui';
