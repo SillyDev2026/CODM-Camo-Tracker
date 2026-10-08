@@ -19,16 +19,18 @@ test('every firearm has dropdown candidates or custom fallback and source proven
  }
 });
 test('researched lists are weapon-specific and never imply full coverage',()=>{
- assert.ok(COVERED_WEAPON_IDS.length>=11);
+ assert.ok(COVERED_WEAPON_IDS.length>=12);
  const qq9=attachmentChoices('smg:qq9','ammunition');
  assert.equal(qq9.verifiedSlot,true);
  assert.ok(qq9.choices.includes('10mm 30 Round Reload'));
  assert.ok(!qq9.choices.includes('80 Round Extended Mag'));
  const cordite=attachmentChoices('smg:cordite','ammunition');
  assert.ok(cordite.choices.includes('80 Round Extended Mag'));
- assert.equal(attachmentChoices('smg:static-hv','ammunition').specific,false);
+ assert.equal(attachmentChoices('smg:static-hv','barrel').choices.includes('Supe-SIL Suppressed Barrel'),true);
+ assert.equal(attachmentChoices('smg:rus-79u','ammunition').specific,false);
  assert.equal(attachmentCoverage('smg:qq9').verified,true);
- assert.equal(attachmentCoverage('smg:static-hv').verified,false);
+ assert.equal(attachmentCoverage('smg:static-hv').verified,true);
+ assert.equal(attachmentCoverage('smg:rus-79u').verified,false);
  assert.equal(qq9.complete,false);
 });
 test('CamoVault share code round trips five attachments and stats only',()=>{

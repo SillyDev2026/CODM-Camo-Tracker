@@ -24,11 +24,17 @@ const SOURCES = Object.freeze({
  cordite:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/cordite-stats-attachment-skin/',
  cbr4:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/CBR4-stats-attachment-skin',
  dlq:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/dl-q33-stats-attachment-skin/',
- newer:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-6-2025'
+ newer:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-6-2025',
+ staticHV:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/static-hv-cod-mobile-loadout'
 });
 // Each per-weapon item lists documented example choices, not every option.
 // Coverage is intentionally partial; never infer a complete set from loadout articles.
 const SPECIFIC = Object.freeze({
+ 'smg:static-hv':{source:SOURCES.staticHV,slots:{
+  barrel:['Supe-SIL Suppressed Barrel'],stock:['SL Tac Hive V.4 Stock'],
+  laser:['Kimura RYL33 Laser Sight'],underbarrel:['Paracord Grip'],
+  reargrip:['Thar-V1.2 Grip']
+ }},
  'smg:qq9': {source:SOURCES.qq9,slots:{
   muzzle:['OWC Light Compensator','Tactical Suppressor'],
   barrel:['Monolithic Integral Suppressor'],

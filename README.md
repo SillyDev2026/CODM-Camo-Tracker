@@ -106,3 +106,5 @@ CODM displays some weapon stats above 100, so manually entered Gunsmith statisti
 ## v1.6.1 — Gunsmith polish
 
 The new share-code panel records the **Multiplayer** or **Battle Royale** mode for each saved CODM code and includes the selected mode in CamoVault CV1 share codes. Gunsmith numbers entered from the game are preserved up to 999 instead of being incorrectly clipped at 100. The v1.6.1 cache version ensures the new attachment menus, share-code logic and source data are refreshed together across GitHub Pages updates.
+
+**Static HV:** Community-reported CODM attachments from [Zilliongamer](https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/static-hv-cod-mobile-loadout) now appear under the Static HV's researched choices: Supe-SIL Suppressed Barrel, SL Tac Hive V.4 Stock, Kimura RYL33 Laser Sight, Paracord Grip and Thar-V1.2 Grip. This expands weapon-specific coverage to **12 guns**. The referenced loadout is an example rather than the game's full attachment inventory.
