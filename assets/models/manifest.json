@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "description": "Licensed representative class models for Gunsmith inspection; not actual COD Mobile meshes.",
+  "notice": "Do not represent these as exact CODM models. Replace an entry only with approved, legally distributable GLB artwork.",
+  "models": {
+    "ar": {
+      "file": "assets/models/ar.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_east/Flat Guns East/GLB/Rifle_Assault_East.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative assault rifle"
+    },
+    "smg": {
+      "file": "assets/models/smg.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_east/Flat Guns East/GLB/SMG_Full_East.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative submachine gun"
+    },
+    "lmg": {
+      "file": "assets/models/lmg.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_west/Flat Guns West/GLB/Rifle_Battle_West.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative long firearm (not an exact LMG)"
+    },
+    "sniper": {
+      "file": "assets/models/sniper.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_east/Flat Guns East/GLB/Sniper_Rifle_East.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative sniper rifle"
+    },
+    "marksman": {
+      "file": "assets/models/marksman.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_east/Flat Guns East/GLB/Rifle_Battle_East.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative battle rifle"
+    },
+    "shotgun": {
+      "file": "assets/models/shotgun.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_east/Flat Guns East/GLB/Shotgun_Pump_East.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative pump shotgun"
+    },
+    "pistol": {
+      "file": "assets/models/pistol.glb",
+      "sourceRepo": "petroulacl/fps-asset-kit",
+      "sourceCommit": "a19b7458a593598211c95ec46ef4eb4b6d1f94d7",
+      "sourcePath": "weapons/flat_guns_west/Flat Guns West/GLB/Pistol_Full_West.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative pistol"
+    },
+    "melee": {
+      "file": "assets/models/melee.glb",
+      "sourceRepo": "Hidencod/tge-assets",
+      "sourceCommit": "08f0c913f6783cc81f9f6105a7cdda8562b1c192",
+      "sourcePath": "packs/mini-dungeon/weapon-sword.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative sword"
+    },
+    "launcher": {
+      "file": "assets/models/launcher.glb",
+      "sourceRepo": "Hidencod/tge-assets",
+      "sourceCommit": "08f0c913f6783cc81f9f6105a7cdda8562b1c192",
+      "sourcePath": "packs/blaster-kit/blaster-g.glb",
+      "license": "CC0-1.0",
+      "caption": "Representative sci-fi blaster (not an exact launcher)"
+    }
+  }
+}
