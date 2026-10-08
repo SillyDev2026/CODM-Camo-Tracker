@@ -25,6 +25,15 @@ let saveTimer;
 let toastTimer;
 let activeDialog = null;
 
+function saveViewPreference(){try{localStorage.setItem('camovault-view-v1',JSON.stringify({mode:currentMode,category:activeCategory}));}catch{}}
+function restoreViewPreference(){try{const v=JSON.parse(localStorage.getItem('camovault-view-v1')||'null');if(v?.mode==='zombies')currentMode='zombies';if(v?.category && GROUP_BY_ID.has(v.category)){activeCategory=v.category;currentView='category';}}catch{}}
+async function refreshSeasonCatalog(notify=false){
+ if(seasonLoading)return;
+ seasonLoading=true;seasonView(seasonStatus,seasonOffline,true);
+ try{const fresh=await loadSeasonalWeapons();seasonStatus=fresh;lastSeasonRefresh=Date.now();seasonOffline=false;renderDashboard();if(notify)toast('Verified season roster checked');}
+ catch(error){seasonOffline=true;console.warn('Season refresh failed',error);if(notify)toast('Offline: your saved camos are still available');}
+ finally{seasonLoading=false;seasonView(seasonStatus,seasonOffline,false);}
+}
 function profile() { return state.profiles.find(item => item.id === state.activeProfileId) || state.profiles[0]; }
 function progress() { return profile().progress; }
 function entry(id) { return progressFor(progress(), id); }
@@ -161,7 +170,7 @@ function go(view, category = null) {
   currentView = view === 'category' && GROUP_BY_ID.has(category) ? 'category' : 'weapons';
   activeCategory = currentView === 'category' ? category : null;
   $('weaponSearch').value = ''; currentFilter = 'all';
-  renderDashboard(); closeMenu();
+  renderDashboard(); closeMenu(); saveViewPreference();
   const top = Math.max(0, $('weaponSection').getBoundingClientRect().top + window.scrollY - 84);
   window.scrollTo({ top, behavior: 'smooth' });
 }
@@ -316,6 +325,9 @@ async function downloadCloud() {
 function handleAction(action) {
   if (action === 'open-settings') openSettings();
   else if (action === 'close-settings') closeSettings();
+  else if (action === 'season-refresh') refreshSeasonCatalog(true);
+  else if (action === 'season-new') { go('weapons'); currentFilter='season'; renderDashboard(); }
+  else if (action === 'resume') {const id=$('focusResume').dataset.weaponTarget;if(id)openDrawer(id);}
   else if (action === 'view-weapons') go('weapons');
   else if (action === 'clear-filters') { $('weaponSearch').value = ''; currentFilter = 'all'; renderWeaponGrid(); }
   else if (action === 'close-drawer') closeDrawer();
@@ -351,8 +363,12 @@ function bindEvents() {
   document.addEventListener('click', event => {
     const action = event.target.closest('[data-action]');
     if (action) { handleAction(action.dataset.action); return; }
+    const quick=event.target.closest('[data-quick]');
+    if(quick){const id=quick.dataset.quick;if(BY_ID.has(id))mutate(id,e=>{if(currentMode==='zombies'){e.zombies.aetherCrystal=!e.zombies.aetherCrystal;}else{e.gold=!e.gold;if(e.gold)for(const camo of BASIC_CAMOS)e.base[camo]=true;}});return;}
+    const favorite=event.target.closest('[data-fav]');
+    if(favorite){const id=favorite.dataset.fav;if(BY_ID.has(id))mutate(id,e=>{e.favorite=!e.favorite;});return;}
     const mode=event.target.closest('[data-mode]');
-    if(mode){currentMode=mode.dataset.mode==='zombies'?'zombies':'mp';currentFilter='all';renderDashboard();closeMenu();return;}
+    if(mode){currentMode=mode.dataset.mode==='zombies'?'zombies':'mp';currentFilter='all';renderDashboard();closeMenu();saveViewPreference();return;}
     const weapon = event.target.closest('[data-weapon]');
     if (weapon) { openDrawer(weapon.dataset.weapon); return; }
     const category = event.target.closest('[data-category]');
@@ -408,6 +424,7 @@ function bindEvents() {
 async function boot() {
   // Display existing weapon data immediately. Seasonal HTTP requests must not block startup.
   state = await loadState();
+  restoreViewPreference();
   const mandatory = ['categoryNav','categoryChips','statsGrid','weaponGrid','completedFilter','seasonBanner','weaponSearch','weaponsTitle'];
   const missing = mandatory.filter(id => !$(id));
   if (missing.length) throw new Error('The website files are out of sync: ' + missing.join(', '));
@@ -416,14 +433,9 @@ async function boot() {
   renderDashboard();
   // Existing profiles are always read first. Never wipe IndexedDB to recover from UI errors.
   await saveState(state).then(() => setSaveBadge('Saved locally')).catch(() => setSaveBadge('Storage unavailable — export a backup', true));
-  loadSeasonalWeapons().then(result => {
-    seasonStatus = result;
-    renderDashboard();
-  }).catch(error => {
-    seasonOffline = true;
-    console.warn('Seasonal catalog unavailable', error);
-    renderSeasonBanner();
-  });
+  refreshSeasonCatalog();
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden && Date.now()-lastSeasonRefresh>10*60*1000)refreshSeasonCatalog();});
+  setInterval(()=>{if(!document.hidden)refreshSeasonCatalog();},30*60*1000);
 }
 boot().catch(error => {
   console.error('CamoVault initialization failed', error);
