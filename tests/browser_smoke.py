@@ -43,6 +43,16 @@ def main():
             page.goto(url, wait_until="domcontentloaded")
             wait_ready(page, errors)
             print("Startup passed with IndexedDB")
+            assert page.evaluate("document.documentElement.dataset.cvReady") == "true", "Ready signal missing"
+            assert page.locator("#categoryChips button").count() >= 9, "Weapon categories are blank"
+            assert page.locator("#statsGrid .stat-card").count() == 4, "Progress cards are blank"
+            assert page.locator("#weaponGrid .weapon-card").count() >= 100, "Weapon collection is blank"
+            page.wait_for_function("document.querySelector('#seasonHealth').textContent.includes('Catalog checked') || document.querySelector('#seasonHealth').textContent.includes('Offline:')", timeout=12000)
+            assert page.locator("#startupRecovery").is_hidden(), "Startup watchdog triggered incorrectly"
+            page.wait_for_timeout(100)
+            focus = page.locator("#focusTitle").bounding_box()
+            assert focus and focus["width"] >= 155, f"Continue card text squeezed: {focus}"
+            print("Weapon categories, stats, roster and Continue card fit Android viewport")
             dimensions = page.evaluate("({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})")
             print("Mobile layout dimensions:", dimensions)
             assert dimensions["scroll"] <= dimensions["width"], "Mobile layout has horizontal overflow"
@@ -174,6 +184,17 @@ def main():
             wait_ready(other, errors)
             print("Storage fallback startup passed")
             context.close()
+            # The screenshot failure occurs when app modules never execute:
+            # verify that users get a recovery action rather than empty sections.
+            recovery = browser.new_context(viewport={"width":375,"height":812})
+            broken = recovery.new_page()
+            broken.route("**/js/app.js*", lambda route: route.abort())
+            broken.goto(url, wait_until="domcontentloaded")
+            broken.locator("#startupRecovery").wait_for(state="visible",timeout=16000)
+            assert "Weapons couldn't finish loading" in broken.locator("#startupRecovery").inner_text()
+            assert broken.locator("#recoverSite").is_visible()
+            print("Failed JavaScript displays non-destructive recovery instead of blank categories")
+            recovery.close()
             browser.close()
     finally:
         server.shutdown()
