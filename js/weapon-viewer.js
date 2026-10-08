@@ -1,8 +1,9 @@
-// Lightweight offline software 3D viewport. Rotates projected three-dimensional
+// Self-hosted GLB model viewer with software 3D fallback. Rotates projected three-dimensional
 // meshes (not CODM assets or a claim of exact weapon geometry).
 export function startWeaponViewer(canvas,weapon,getSlots){
  const ctx=canvas.getContext('2d'),pointers=new Map();
  let yaw=-.35,pitch=.1,zoom=1.05,turning=false,lastTime=0,raf=0,alive=true;
+ let realModel=null,modelReady=false;
  const color=(hex,shade)=>{const c=parseInt(hex.slice(1),16);return 'rgb('+[c>>16,(c>>8)&255,c&255].map(v=>Math.max(0,Math.min(255,Math.round(v*shade)))).join(',')+')';};
  const faces=[
   {v:[0,3,2,1],s:1},{v:[4,5,6,7],s:.58},{v:[0,1,5,4],s:.81},{v:[3,7,6,2],s:1.14},{v:[0,4,7,3],s:.68},{v:[1,2,6,5],s:.97}
@@ -96,10 +97,61 @@ export function startWeaponViewer(canvas,weapon,getSlots){
  canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
  canvas.addEventListener('wheel',wheel,{passive:false});canvas.style.touchAction='none';
  raf=requestAnimationFrame(frame);
+ // Load self-hosted GLB from the repository using the locally vendored
+ // model-viewer. The procedural preview is retained until the GLB loads.
+ if(['ar','smg','lmg','sniper','marksman','shotgun','pistol','melee','launcher'].includes(weapon.category)){
+  const model=document.createElement('model-viewer');
+  model.className='gs-real-model';
+  model.hidden=true;
+  model.setAttribute('src',new URL('../assets/models/'+weapon.category+'.glb',import.meta.url).href);
+  model.setAttribute('alt','Representative three-dimensional '+weapon.category+' model (not the exact '+weapon.name+' model)');
+  for(const attr of ['camera-controls','interaction-prompt'])model.setAttribute(attr,attr==='interaction-prompt'?'none':'');
+  model.setAttribute('touch-action','none');
+  model.setAttribute('environment-image','neutral');
+  model.setAttribute('shadow-intensity','1.1');
+  model.setAttribute('exposure','1.25');
+  model.setAttribute('field-of-view','30deg');
+  model.setAttribute('camera-orbit','-35deg 75deg auto');
+  model.setAttribute('loading','eager');
+  model.addEventListener('load',()=>{
+   if(!alive)return;
+   modelReady=true;realModel=model;
+   cancelAnimationFrame(raf);raf=0;canvas.hidden=true;model.hidden=false;
+   const label=document.getElementById('gunModelLabel');
+   if(label)label.textContent='IMPORTED CC0 GLB · REAL MESH';
+  });
+  model.addEventListener('error',()=>{
+   if(!alive)return;
+   modelReady=false;realModel=null;canvas.hidden=false;model.remove();
+   const label=document.getElementById('gunModelLabel');
+   if(label)label.textContent='OFFLINE CONCEPT FALLBACK';
+  });
+  canvas.parentElement.append(model);
+ }
  return {
-  zoom(delta){zoom=Math.max(.65,Math.min(1.8,zoom+delta));},
-  reset(){yaw=-.35;pitch=.1;zoom=1.05;turning=false;},
-  spin(){turning=!turning;return turning;},
-  destroy(){alive=false;cancelAnimationFrame(raf);canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',up);canvas.removeEventListener('wheel',wheel);}
+  zoom(delta){
+   if(modelReady&&realModel?.getCameraOrbit){
+    const orbit=realModel.getCameraOrbit();
+    const r=Math.max(.2,Math.min(150,orbit.radius*(delta>0?.84:1.19)));
+    realModel.setAttribute('camera-orbit',orbit.theta+'rad '+orbit.phi+'rad '+r+'m');
+   }else zoom=Math.max(.65,Math.min(1.8,zoom+delta));
+  },
+  reset(){
+   yaw=-.35;pitch=.1;zoom=1.05;turning=false;
+   if(realModel){realModel.removeAttribute('auto-rotate');realModel.setAttribute('camera-orbit','-35deg 75deg auto');realModel.jumpCameraToGoal?.();}
+  },
+  spin(){
+   turning=!turning;
+   if(modelReady&&realModel){
+    if(turning)realModel.setAttribute('auto-rotate','');
+    else realModel.removeAttribute('auto-rotate');
+   }
+   return turning;
+  },
+  destroy(){
+   alive=false;cancelAnimationFrame(raf);canvas.hidden=false;
+   (realModel||canvas.parentElement.querySelector('model-viewer'))?.remove();
+   canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',up);canvas.removeEventListener('wheel',wheel);
+  }
  };
 }
