@@ -63,11 +63,24 @@
       </section>
       <section class="gs-editor"><div class="gs-section-head"><strong>YOUR SAVED LOADOUTS</strong><small>3 presets per weapon</small></div>
         <div id="gunsmithPresets" class="gs-presets"></div>
+        <label class="gs-title-input">What is this build for?
+          <select id="gunsmithFocus" aria-label="Build focus">
+            <option value="balanced">Balanced</option><option value="control">Low recoil</option>
+            <option value="handling">Fast ADS / movement</option><option value="range">Long range</option>
+            <option value="hipfire">Hip-fire / close range</option><option value="stealth">Stealth / suppressed</option>
+          </select>
+        </label>
+        <p class="gs-focus-tip" id="gunsmithFocusTip"></p>
         <label class="gs-title-input">Build name<input id="gunsmithBuildName" type="text" maxlength="32" placeholder="My loadout"></label>
         <div class="gs-section-head gs-attachment-head"><strong>ATTACHMENTS</strong><small id="gunsmithCapacity">0 / 5 ATTACHMENTS</small></div>
         <div class="gs-source-row"><span id="gunsmithCoverage" class="gs-coverage" role="status">CHECKING ATTACHMENT SOURCES</span><a id="gunsmithSource" href="https://blog.activision.com/call-of-duty/2020-08/Call-of-Duty-Mobile-Gunsmith" target="_blank" rel="noopener noreferrer">Source ↗</a></div>
-        <p class="gs-hint">Dropdowns show <strong>only researched choices for the selected weapon</strong>. For missing attachments, choose <strong>Custom</strong> and enter the exact in-game name. Uncatalogued guns will not show guessed options.</p>
+        <p class="gs-hint">Dropdowns show <strong>only researched choices for the selected weapon</strong>. For missing attachments, choose <strong>Custom</strong> and enter the exact in-game name once. It will be remembered <strong>for this weapon only</strong> across all three builds.</p>
         <div id="gunsmithSlots" class="gs-slots"></div>
+        <section class="gs-personal-library" aria-label="My attachments saved for this weapon">
+          <div class="gs-section-head"><strong>MY WEAPON-SPECIFIC ATTACHMENTS</strong><small>Reusable in all three presets</small></div>
+          <p class="gs-hint">Use Custom on a slot to save the actual name from the game. Saved names appear only for this particular weapon and profile. Tap × below to remove a suggestion without erasing equipped builds.</p>
+          <div id="gunsmithMyParts" class="gs-library-parts"></div>
+        </section>
         <label class="gs-title-input">Build notes<textarea id="gunsmithNotes" maxlength="500" rows="3" placeholder="ADS speed, recoil, playstyle, favorite setup…"></textarea></label>
         <div class="gs-actions"><button type="button" data-gs-copy="true" class="gs-primary">Copy attachment list</button><button type="button" data-gs-clear="true" class="gs-muted">Clear attachments</button></div>
         <section class="gs-share-panel" aria-label="Gunsmith sharing">
