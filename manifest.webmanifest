@@ -1,0 +1,12 @@
+{
+  "name": "CamoVault — COD Mobile Camo Tracker",
+  "short_name": "CamoVault",
+  "description": "Offline-friendly manual COD Mobile camo progress tracker",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090e12",
+  "theme_color": "#0a0f13",
+  "icons": [{ "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
