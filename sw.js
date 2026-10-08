@@ -27,7 +27,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   // Network first for scripts, styles, and catalog data to prevent mixed-version startup.
-  if (/\\.(?:js|css|json)$/.test(url.pathname)) {
+  if (/\.(?:js|css|json)$/.test(url.pathname)) {
     event.respondWith(fetch(request).then(response => {
       if (response.ok) {
         const copy = response.clone();
