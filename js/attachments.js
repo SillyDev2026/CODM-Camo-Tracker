@@ -24,6 +24,7 @@ const SOURCES = Object.freeze({
  bp50:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-bp50-loadout',
  seasonal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-6-2025',
  raal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-raal-mg-loadout',
+ rytec:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/rytec-amr-gunsmith-attachments-list',
  rus:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-rus-79u-gunsmith-loadout-attachments-in-cod-mobile',
  ak117:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-ak117-gunsmith-loadout-attachments-in-cod-mobile/',
  drh:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-dr-h-gunsmith-loadout-attachments-in-cod-mobile',
@@ -35,6 +36,17 @@ const SOURCES = Object.freeze({
 // Each per-weapon item lists documented example choices, not every option.
 // Coverage is intentionally partial; never infer a complete set from loadout articles.
 const SPECIFIC = Object.freeze({
+ 'sniper:rytec-amr':{source:SOURCES.rytec,slots:{
+  muzzle:['Tactical Suppressor','OWC Light Suppressor','Monolithic Suppressor','RTC Compensator','MIP Light Flash Guard','RTC Light Muzzle Brake'],
+  barrel:['MIP Light Barrel (Short)','MIP Extended Light Barrel','OWC Marksman'],
+  optic:['3X Tactical Scope 1','3X Tactical Scope 2','3X Tactical Scope 3','4X Tactical Scope','6X Tactical Scope 2','6X Tactical Scope 3'],
+  stock:['YKM Light Stock','OWC Skeleton Stock','RTC Steady Stock'],
+  laser:['OWC Laser - Tactical'],
+  underbarrel:['Bipod'],
+  ammunition:['25x59mm Thermite Mag','25x29mm Explosive Mag'],
+  reargrip:['Granulated Grip Tape','Rubberized Grip Tape','Stippled Grip Tape']
+ }},
+
  'smg:rus-79u':{source:SOURCES.rus,slots:{
   muzzle:['OWC Light Compensator'],barrel:['YKM Integral Suppressor Light','OWC Marksman'],
   stock:['No Stock','MIP Strike Stock','YKM Combat Stock'],
