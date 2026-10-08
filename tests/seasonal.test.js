@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { GROUPS, WEAPONS, BY_ID, registerSeasonalWeapons, validateSeasonalCatalog, weaponId, AETHER_KILLS, AETHER_MATCHES } from '../js/catalog.js';
+import { GROUPS, WEAPONS, BY_ID, registerSeasonalWeapons, validateSeasonalCatalog, weaponId, seasonTimeline, AETHER_KILLS, AETHER_MATCHES } from '../js/catalog.js';
 import { cleanProgress, cleanState, freshState } from '../js/storage.js';
 const manifest = JSON.parse(fs.readFileSync(new URL('../data/seasonal-weapons.json', import.meta.url)));
 test('official Season 9 Grav is hidden before release and appears on release without duplicates', () => {
@@ -35,4 +35,19 @@ test('Zombies Aether Crystal save is independent of original Multiplayer Gold an
   assert.equal(AETHER_KILLS.sniper,8);
   const state = freshState(); state.profiles[0].progress['smg:qq9']=value;
   assert.equal(cleanState(JSON.parse(JSON.stringify(state))).profiles[0].progress['smg:qq9'].zombies.aetherCrystal,true);
+});
+
+test('seasons advance by official UTC start date without removing earlier progress', () => {
+  const before = seasonTimeline(manifest, Date.parse('2026-10-14T23:59:59Z'));
+  assert.equal(before.currentSeason?.id, '2026-s8');
+  assert.equal(before.nextSeason?.id, '2026-s9');
+  const after = seasonTimeline(manifest, Date.parse('2026-10-15T00:00:00Z'));
+  assert.equal(after.currentSeason?.id, '2026-s9');
+  assert.equal(after.nextSeason, null);
+  assert.deepEqual(after.pastSeasons.map(s => s.id), ['2026-s8']);
+  assert.equal(WEAPONS.some(w => w.id === 'smg:qq9'), true);
+});
+test('season schedule rejects duplicate or malicious timeline entries', () => {
+  assert.throws(() => seasonTimeline({seasons:[manifest.seasons[0],manifest.seasons[0]]}),/Invalid or duplicate/);
+  assert.throws(() => seasonTimeline({seasons:[{...manifest.seasons[0],source:'https://other.site/unknown'}]}),/Invalid or duplicate/);
 });
