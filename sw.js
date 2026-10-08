@@ -1,5 +1,5 @@
 // Caches only this site's public files. No data, credentials, or GitHub API calls are cached.
-const CACHE = 'camovault-assets-v1.6.1';
+const CACHE = 'camovault-assets-v1.6.2';
 const FILES = ['./', './index.html', './assets/style.css', './assets/favicon.svg', './js/catalog.js', './data/seasonal-weapons.json', './js/storage.js', './js/github.js', './js/token-vault.js', './js/app.js', './js/enhancements.js', './js/loadouts.js', './js/gunsmith.js', './js/attachments.js', './js/build-share.js', './js/weapon-viewer.js', './assets/vendor/model-viewer.min.js', './assets/models/manifest.json', './assets/models/ar.glb', './assets/models/smg.glb', './assets/models/lmg.glb', './assets/models/sniper.glb', './assets/models/marksman.glb', './assets/models/shotgun.glb', './assets/models/pistol.glb', './assets/models/melee.glb', './assets/models/launcher.glb', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
