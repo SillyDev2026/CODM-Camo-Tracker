@@ -91,12 +91,15 @@ def main():
             assert page.locator('[data-gs-custom="optic"]').is_visible()
             page.locator('[data-gs-custom="optic"]').fill("Red Dot Sight")
             page.locator('[data-gs-custom="optic"]').dispatch_event("change")
-            assert page.locator('[data-gs-slot="optic"]').input_value() == "__custom__"
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight"
+            assert "Red Dot Sight" in page.locator("#gunsmithMyParts").inner_text()
             assert page.locator("#gunsmithCapacity").inner_text().startswith("1 / 5")
+            page.locator("#gunsmithFocus").select_option("control")
+            assert "recoil" in page.locator("#gunsmithFocusTip").inner_text().lower()
             page.locator('[data-gs-preset="1"]').click()
             page.locator('[data-gs-slot="muzzle"]').select_option("OWC Light Compensator")
             page.locator('[data-gs-preset="0"]').click()
-            assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight"
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight"
             assert page.locator('[data-gs-slot="muzzle"]').input_value() == ""
             print("Active preset BEFORE native code:", page.locator('.gs-preset[aria-pressed="true"]').get_attribute("data-gs-preset"))
             code = page.locator("#gunsmithShareCode").input_value()
@@ -112,7 +115,7 @@ def main():
             page.locator("#gunsmithImportCode").fill(code)
             page.once("dialog", lambda dialog: dialog.accept())
             page.locator('[data-gs-share="import"]').click()
-            assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "CamoVault code import did not restore attachments"
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight", "CamoVault code import did not restore attachments"
             page.locator('[data-gs-preset="0"]').click()
             print("Code mode preset 1 after switching:", page.locator("#gunsmithGameMode").input_value())
             print("Active preset AFTER choosing 1:", page.locator('.gs-preset[aria-pressed="true"]').get_attribute("data-gs-preset"))
@@ -133,6 +136,10 @@ def main():
             page.locator('[data-build="smg:rus-79u"]').click()
             rus_ammo = page.locator('[data-gs-slot="ammunition"] option').all_text_contents()
             assert len(rus_ammo) == 2, "Unknown gun must show only empty/custom, no generic guesses"
+            page.locator('[data-gs-slot="ammunition"]').select_option("__custom__")
+            page.locator('[data-gs-custom="ammunition"]').fill("My RUS Magazine")
+            page.locator('[data-gs-custom="ammunition"]').dispatch_event("change")
+            assert "My RUS Magazine" in page.locator('[data-gs-slot="ammunition"] option').all_text_contents(), "RUS personal library not updated"
             assert page.locator("#gunsmithSource").is_hidden(), "Unknown gun must not show fake attachment source"
             page.locator("#gunsmithClose").click()
             page.locator("#weaponSearch").fill("")
@@ -157,7 +164,9 @@ def main():
             assert page.locator('[data-mode="zombies"].mode-tab').get_attribute("aria-pressed") == "true", "Mode preference did not persist"
             page.locator('[data-mode="mp"].mode-tab').click()
             page.locator('[data-build="smg:qq9"]').click()
-            assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "Saved custom attachment missing after reload"
+            assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight", "Saved personal attachment missing after reload"
+            assert "Red Dot Sight" in page.locator("#gunsmithMyParts").inner_text(), "Personal library not saved"
+            assert page.locator("#gunsmithFocus").input_value() == "control", "Build focus not saved"
             assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM share code not saved"
             assert page.locator("#gunsmithGameMode").input_value() == "BATTLE ROYALE", "CODM code mode not saved"
             assert page.locator('[data-gs-stat="Accuracy"]').input_value() == "85", "Saved build stat missing after reload"
