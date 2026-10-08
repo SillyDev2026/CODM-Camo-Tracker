@@ -444,3 +444,30 @@ button{touch-action:manipulation}
 /* Save mode selectors share the same accessible design as attachment selectors. */
 .gs-title-input select{width:100%;min-width:0;min-height:40px;background:#0c1b21;border:1px solid #426255;border-radius:7px;padding:10px;color:#eff7ed;font-size:12px}
 .gs-title-input select:focus-visible{outline:2px solid #c9fb55;outline-offset:1px}
+
+
+/* v1.6.4: startup recovery + legible small-screen progress layout */
+.startup-recovery{position:relative;z-index:80;margin:12px auto;max-width:820px;background:#382721;border:1px solid #b77854;border-radius:12px;padding:17px 20px;color:#fff3e6;font:14px/1.5 system-ui,sans-serif}
+.startup-recovery[hidden]{display:none!important}
+.startup-recovery strong{display:block;font-size:17px;margin-bottom:6px}
+.startup-recovery p{margin:0 0 12px;color:#ead9cc;overflow-wrap:anywhere}
+.startup-recovery button{border:0;border-radius:8px;background:#c9fb55;color:#19281b;padding:12px 16px;font-weight:800;min-height:42px}
+.startup-recovery button:disabled{opacity:.65}
+.loading-placeholder{display:block;padding:12px 4px;color:#9db6ae;font-size:12px;font-weight:600;line-height:1.5}
+.category-chips .loading-placeholder{white-space:nowrap}
+.weapon-grid>.loading-placeholder{grid-column:1/-1;min-height:60px}
+.stats-grid>.loading-placeholder{grid-column:1/-1}
+@media(max-width:720px){
+ .focus-strip{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto auto;align-items:center;column-gap:12px;row-gap:12px;padding:15px;min-width:0}
+ .focus-strip .focus-icon{grid-column:1;grid-row:1;width:42px;height:42px}
+ .focus-strip .focus-info{grid-column:2;grid-row:1;min-width:0;width:100%;gap:5px}
+ .focus-strip .focus-eyebrow{font-size:9px;letter-spacing:.09em;line-height:1.4}
+ .focus-strip .focus-info strong{font-size:23px;white-space:normal;overflow-wrap:anywhere;line-height:1.1}
+ .focus-strip .focus-info span{white-space:normal;font-size:11px;line-height:1.35}
+ .focus-strip .focus-progress{grid-column:1/-1;grid-row:2;min-width:0;width:100%;display:flex;align-items:center;gap:12px;text-align:left}
+ .focus-strip .focus-progress strong{min-width:44px}
+ .focus-strip .focus-progress .progress-track{flex:1;margin:0;height:7px;min-width:0}
+ .focus-strip .focus-resume{grid-column:1/-1;grid-row:3;justify-self:stretch;width:100%;min-width:0}
+ .season-hub h2{font-size:clamp(23px,7vw,32px);overflow-wrap:anywhere}
+ .armory-quick-head{margin-bottom:10px}
+}
