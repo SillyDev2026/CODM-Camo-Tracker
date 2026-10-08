@@ -93,12 +93,15 @@ def main():
             page.locator("#gunsmithGameCode").fill("QQ9-1T3A5B6A7M")
             page.locator("#gunsmithGameCode").dispatch_event("change")
             page.locator("#gunsmithGameMode").select_option("BATTLE ROYALE")
+            print("Code mode after selection:", page.locator("#gunsmithGameMode").input_value())
             page.locator('[data-gs-preset="2"]').click()
+            print("Code mode preset 3:", page.locator("#gunsmithGameMode").input_value())
             page.locator("#gunsmithImportCode").fill(code)
             page.once("dialog", lambda dialog: dialog.accept())
             page.locator('[data-gs-share="import"]').click()
             assert page.locator('[data-gs-custom="optic"]').input_value() == "Red Dot Sight", "CamoVault code import did not restore attachments"
             page.locator('[data-gs-preset="0"]').click()
+            print("Code mode preset 1 after switching:", page.locator("#gunsmithGameMode").input_value())
             assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM game code lost"
             assert page.locator("#gunsmithGameMode").input_value() == "BATTLE ROYALE"
             page.locator('[data-gs-stat="Accuracy"]').fill("85")
