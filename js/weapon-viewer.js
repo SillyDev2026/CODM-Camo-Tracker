@@ -127,6 +127,12 @@ export function startWeaponViewer(canvas,weapon,getSlots){
    if(label)label.textContent='OFFLINE CONCEPT FALLBACK';
   });
   canvas.parentElement.append(model);
+  // WebGL engine is large (~1 MB): load only when somebody opens 3D Gunsmith.
+  // A failed import never blocks the normal weapon/camo dashboard.
+  import('../assets/vendor/model-viewer.min.js').catch(error=>{
+   console.warn('Optional GLB viewer unavailable; keeping software preview',error);
+   model.dispatchEvent(new Event('error'));
+  });
  }
  return {
   zoom(delta){
