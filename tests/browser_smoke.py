@@ -46,9 +46,25 @@ def main():
             dimensions = page.evaluate("({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})")
             print("Mobile layout dimensions:", dimensions)
             assert dimensions["scroll"] <= dimensions["width"], "Mobile layout has horizontal overflow"
+            for width in [320, 360, 375, 414, 768, 1024, 1440]:
+                page.set_viewport_size({"width": width, "height": 850})
+                dims = page.evaluate("({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})")
+                assert dims["scroll"] <= dims["width"], f"Horizontal scroll at {width}px: {dims}"
+            page.set_viewport_size({"width": 375, "height": 812})
             assert page.locator("#seasonTitle").count() == 1, "Season command missing"
             assert page.locator("#focusResume").count() == 1, "Continue button missing"
             assert page.locator('[data-quick="smg:qq9"]').count() == 1, "One-tap Gold action missing"
+            page.locator("#weaponSearch").fill("qq9")
+            assert page.locator(".weapon-card").count() == 1, "Search is not narrowing results"
+            assert page.locator('[data-quick="smg:qq9"]').count() == 1, "Search dropped Gold quick action"
+            assert page.locator('[data-fav="smg:qq9"]').count() == 1, "Search dropped favorite button"
+            page.locator("#sortBy").select_option("az")
+            assert page.locator('[data-quick="smg:qq9"]').count() == 1, "Sorting dropped quick actions"
+            page.locator('[data-filter="unstarted"]').click()
+            assert page.locator('[data-quick="smg:qq9"]').count() == 1, "Filtering dropped quick actions"
+            page.locator('[data-filter="all"]').click()
+            page.locator("#weaponSearch").fill("")
+            assert page.locator('[data-quick="smg:qq9"]').count() == 1, "Restoring results dropped quick actions"
             page.locator('[data-fav="smg:qq9"]').click()
             assert page.locator('[data-fav="smg:qq9"]').get_attribute("aria-label").startswith("Remove favorite"), "Quick favorite toggle failed"
             page.locator('[data-quick="smg:qq9"]').click()
@@ -74,6 +90,7 @@ def main():
             assert page.locator('input[data-zombie-check="aetherCrystal"]').is_checked(), "Zombies data lost on reload"
             assert page.locator('input[data-zombie-number="matches"]').input_value() == "3"
             print("MP and Zombies data survive reload; mode preference and quick actions work")
+            print("Quick camo controls survive sorting/search/filters; responsive widths 320–1440px fit")
             assert page.locator("#seasonTitle").is_visible(), "Season hub is not visible"
             page.close()
             context = browser.new_context(viewport={"width": 375, "height": 812})
