@@ -69,9 +69,13 @@ def main():
             page.locator('[data-build="smg:qq9"]').click()
             assert page.locator("#gunsmithModal").is_visible(), "Gunsmith modal did not open"
             assert page.locator("#gunsmithName").inner_text() == "QQ9"
-            assert page.locator("#gunsmithCanvas").is_visible()
-            page.wait_for_timeout(120)
-            assert page.locator("#gunsmithCanvas").evaluate("(c) => c.width > 10 && c.height > 10"), "3D canvas not initialized"
+            page.wait_for_function("customElements.get('model-viewer') !== undefined", timeout=15000)
+            model = page.locator("#gunsmithModal model-viewer.gs-real-model")
+            assert model.count() == 1, "Imported GLB viewer is missing"
+            assert model.get_attribute("src").endswith("/assets/models/smg.glb"), "Not loading self-hosted SMG model"
+            model.wait_for(state="visible", timeout=25000)
+            assert page.locator("#gunModelLabel").inner_text() == "IMPORTED CC0 GLB · REAL MESH", "3D model did not load"
+            print("Real licensed GLB 3D model rendered in Chromium")
             page.locator('[data-gs-slot="optic"]').fill("Red Dot Sight")
             page.locator('[data-gs-slot="optic"]').dispatch_event("change")
             assert page.locator("#gunsmithCapacity").inner_text().startswith("1 / 5")
