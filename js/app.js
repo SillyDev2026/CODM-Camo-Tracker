@@ -153,10 +153,20 @@ function go(view, category = null) {
   const top = Math.max(0, $('weaponSection').getBoundingClientRect().top + window.scrollY - 84);
   window.scrollTo({ top, behavior: 'smooth' });
 }
+function renderZombiesDrawer(w,e,group,oldScroll) {
+  const z=e.zombies||{},target=Number(z.target)||AETHER_MATCHES,eligible=aetherEligible(w);
+  const kills=Number(z.killsPerMatch)||AETHER_KILLS[w.category],count=Number(z.matches)||0;
+  const start='<div class="drawer-header zombies-header"><div class="drawer-topline"><span class="drawer-kicker">'+safe(group.name.toUpperCase())+' / ZOMBIES</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button></div><h2 class="drawer-title">'+safe(w.name)+'</h2><div class="drawer-subtitle">UNDEAD SIEGE · AETHER CRYSTAL</div><button type="button" class="drawer-fav '+(e.favorite?'on':'')+'" data-action="toggle-favorite">'+(e.favorite?'★ Saved':'☆ Save weapon')+'</button></div><div class="drawer-body">';
+  const checklist=eligible?'<section class="drawer-section"><div class="drawer-section-head">Aether Crystal <small>Manual unlock</small></div><p class="drawer-explainer">A qualified match must meet the zombie-kill target in completed Hard/Nightmare Undead Siege. Verify your camo in-game before marking unlocked.</p><label class="camo-item '+(z.aetherCrystal?'complete':'')+'"><input type="checkbox" data-zombie-check="aetherCrystal" '+(z.aetherCrystal?'checked':'')+'><span class="camo-icon">✧</span><span class="textcol">Aether Crystal</span><small>'+(z.aetherCrystal?'UNLOCKED':'NOT YET')+'</small></label></section><section class="drawer-section"><div class="drawer-section-head">Qualified matches <small>'+count+'/'+target+'</small></div><div class="diamond-meter"><label>Wins<input type="number" inputmode="numeric" min="0" max="100000" data-zombie-number="matches" value="'+count+'"></label><span class="slash">/</span><label>Target<input type="number" inputmode="numeric" min="1" max="100000" data-zombie-number="target" value="'+target+'"></label></div><div class="progress-track"><div class="progress-fill" style="width:'+pct(count,target)+'%"></div></div><div class="level-fields"><label>Required zombie kills per match<input type="number" inputmode="numeric" min="1" max="100000" data-zombie-number="killsPerMatch" value="'+kills+'"></label></div><p class="drawer-explainer">Default: '+AETHER_KILLS[w.category]+' kills across '+AETHER_MATCHES+' qualifying wins. Requirements may change; verify in-game.</p></section>':'<section class="drawer-section"><p class="drawer-explainer">Aether Crystal requirements for this weapon class are not verified. Multiplayer tracking is available.</p></section>';
+  const fields='<section class="drawer-section"><div class="drawer-section-head">Weapon level</div><div class="level-fields"><label>Current<input type="number" min="0" max="200" data-number="level" value="'+(e.level||0)+'"></label><label>Max<input type="number" min="0" max="200" data-number="maxLevel" value="'+(e.maxLevel||0)+'"></label></div></section><section class="drawer-section"><div class="drawer-section-head">Notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Zombies grind notes…">'+safe(e.notes||'')+'</textarea></section><div class="drawer-bottom-note">✓ Zombies progress is independent of Multiplayer camos.</div></div>';
+  $('drawerInner').innerHTML=start+checklist+fields;
+  $('weaponDrawer').scrollTop=oldScroll;
+}
 function renderDrawer() {
   if (!selectedId) return;
   const oldScroll = $('weaponDrawer').scrollTop;
   const weapon = BY_ID.get(selectedId), e = entry(selectedId), group = GROUP_BY_ID.get(weapon.category);
+  if(currentMode==='zombies'){renderZombiesDrawer(weapon,e,group,oldScroll);return;}
   const basicDone = BASIC_CAMOS.filter(camo => e.base?.[camo] || e.gold).length;
   const target = Number(e.diamondTarget) > 0 ? Number(e.diamondTarget) : group.target;
   const label = group.targetUnit === 'matches' ? 'Qualified matches (usually 10 weapon kills each)' : group.targetUnit === 'kills' ? 'Total weapon kills' : 'Required objectives (check in-game)';
@@ -329,6 +339,8 @@ function bindEvents() {
   document.addEventListener('click', event => {
     const action = event.target.closest('[data-action]');
     if (action) { handleAction(action.dataset.action); return; }
+    const mode=event.target.closest('[data-mode]');
+    if(mode){currentMode=mode.dataset.mode==='zombies'?'zombies':'mp';currentFilter='all';renderDashboard();closeMenu();return;}
     const weapon = event.target.closest('[data-weapon]');
     if (weapon) { openDrawer(weapon.dataset.weapon); return; }
     const category = event.target.closest('[data-category]');
@@ -341,6 +353,8 @@ function bindEvents() {
   $('drawerInner').addEventListener('change', event => {
     if (!selectedId) return;
     const input = event.target;
+    if(input.dataset.zombieCheck==='aetherCrystal'&&aetherEligible(BY_ID.get(selectedId)))mutate(selectedId,e=>{e.zombies.aetherCrystal=input.checked;},true);
+    if(input.dataset.zombieNumber&&aetherEligible(BY_ID.get(selectedId)))mutate(selectedId,e=>{e.zombies[input.dataset.zombieNumber]=clamp(Number(input.value),input.dataset.zombieNumber==='matches'?0:1,100000);},true);
     if (input.dataset.basic) mutate(selectedId, e => { e.base[input.dataset.basic] = input.checked; }, true);
     if (input.dataset.tier) mutate(selectedId, e => {
       e[input.dataset.tier] = input.checked;
