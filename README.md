@@ -1,6 +1,6 @@
 # CamoVault Armory — COD Mobile weapon tracker
 
-**Version 1.2 — WEAPONS ONLY, encrypted GitHub PAT vault, no backend required.** A dark, fully responsive weapon armory for tracking **Gold, Platinum, Damascus, Diamond**, basic camo families, weapon level, Diamond challenges, favorites, and per-weapon notes. Includes a manually curated 2026-era weapon catalog (32 SMGs and additional primary/secondary categories).
+**Version 1.3 — Multiplayer and Zombies Aether Crystal camos, seasonal weapons, no custom server required.** A dark, fully responsive weapon armory for tracking **Gold, Platinum, Damascus, Diamond**, basic camo families, weapon level, Diamond challenges, favorites, and per-weapon notes. Includes a manually curated 2026-era weapon catalog (32 SMGs and additional primary/secondary categories).
 
 > **Unofficial community tool.** Not affiliated with or endorsed by Activision or Call of Duty. No Activision authentication, credential harvesting, automated account scraping, or claims of in-game verification. Always compare available weapons and camo rules with your game build.
 
@@ -45,3 +45,9 @@ Edit `js/catalog.js` to add/reorder newly released weapons. The keys generated f
 ## Camo-specific details
 
 A Gold checkbox marks all six basic camo families as completed in the local checklist. Turning Gold off leaves the basic series checked, allowing correction. Platinum, Damascus, and Diamond are **manual** so a misleading automatic completion rule never reports an in-game unlock that may not have happened. Diamond match counters help with tracking but are not connected to Activision.
+
+## Zombies & future seasons
+
+The Zombies tab tracks Aether Crystal separately from Multiplayer camos. Each eligible weapon has a manually confirmed checkbox, qualifying completed Undead Siege wins (default six), and editable kills-per-match. Reference requirements: AR/SMG/LMG 25, pistols 15, shotguns 12, sniper/marksman 8 zombie kills in completed Hard/Nightmare games. Requirements should be checked in-game. Melee and launcher eligibility is unverified, so no Aether target is assigned. The same local storage and GitHub JSON backups retain both modes.
+
+The site loads `data/seasonal-weapons.json` with a network-first policy and offline cache. Weapons become visible automatically when a **reviewed official announcement** entry reaches its releaseAt timestamp; IDs and previously saved progress are preserved. Grav (AR) is configured for October 14, 2026 at 5 PM Pacific, according to https://www.callofduty.com/blog/2026/10/call-of-duty-mobile-season-9-vampires-werewolves. Future seasons need reviewed manifest entries. New-release monitoring can create issues for review rather than adding unverified gear.
