@@ -112,6 +112,21 @@ def main():
             page.locator('[data-gs-stat="Accuracy"]').dispatch_event("change")
             page.locator("#gunsmithClose").click()
             assert page.locator("#gunsmithModal").is_hidden(), "Gunsmith modal did not close"
+            # Weapon-specific menus: no attachment leakage across SMGs.
+            page.locator("#weaponSearch").fill("Fennec")
+            page.locator('[data-build="smg:fennec"]').click()
+            fennec_ammo = page.locator('[data-gs-slot="ammunition"] option').all_text_contents()
+            assert "Extended Mag A" in fennec_ammo, "Fennec researched ammo missing"
+            assert "10mm 30 Round Reload" not in fennec_ammo, "QQ9 ammunition leaked into Fennec"
+            page.locator("#gunsmithClose").click()
+            page.locator("#weaponSearch").fill("RUS-79U")
+            page.locator('[data-build="smg:rus-79u"]').click()
+            rus_ammo = page.locator('[data-gs-slot="ammunition"] option').all_text_contents()
+            assert len(rus_ammo) == 2, "Unknown gun must show only empty/custom, no generic guesses"
+            assert page.locator("#gunsmithSource").is_hidden(), "Unknown gun must not show fake attachment source"
+            page.locator("#gunsmithClose").click()
+            page.locator("#weaponSearch").fill("")
+            assert page.locator('[data-fav="smg:qq9"]').count() == 1
             page.locator('[data-fav="smg:qq9"]').click()
             assert page.locator('[data-fav="smg:qq9"]').get_attribute("aria-label").startswith("Remove favorite"), "Quick favorite toggle failed"
             page.locator('[data-quick="smg:qq9"]').click()
