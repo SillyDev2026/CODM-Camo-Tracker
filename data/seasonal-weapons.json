@@ -1,12 +1,26 @@
 {
   "version": 1,
-  "description": "Approved upcoming weapons from official CODM season announcements. Weapons activate automatically at releaseAt (UTC). Do not include scorestreaks, equipment, or blueprints.",
+  "description": "Verified CODM weapon and season schedule. Update after official announcements; future seasons must not be guessed. Activated weapons keep stable IDs and existing saved progress.",
   "weapons": [
     {
       "name": "Grav",
       "category": "ar",
       "season": "2026 Season 9 — Vampires vs Werewolves",
       "releaseAt": "2026-10-15T00:00:00Z",
+      "source": "https://www.callofduty.com/blog/2026/10/call-of-duty-mobile-season-9-vampires-werewolves"
+    }
+  ],
+  "seasons": [
+    {
+      "id": "2026-s8",
+      "title": "Season 8 · Against All Fate",
+      "startsAt": "2026-09-10T00:00:00Z",
+      "source": "https://www.callofduty.com/blog/2026/09/call-of-duty-mobile-season-8-against-all-fate"
+    },
+    {
+      "id": "2026-s9",
+      "title": "Season 9 · Vampires vs Werewolves",
+      "startsAt": "2026-10-15T00:00:00Z",
       "source": "https://www.callofduty.com/blog/2026/10/call-of-duty-mobile-season-9-vampires-werewolves"
     }
   ]
