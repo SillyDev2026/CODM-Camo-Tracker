@@ -102,3 +102,7 @@ Both code fields and all preset attachments survive local saving, JSON backup an
 
 ### v1.6.0 correction
 CODM displays some weapon stats above 100, so manually entered Gunsmith statistics accept values from 0 to 999. The visual progress bars are capped at full width without changing the original saved value. Previously saved values and existing builds remain readable.
+
+## v1.6.1 — Gunsmith polish
+
+The new share-code panel records the **Multiplayer** or **Battle Royale** mode for each saved CODM code and includes the selected mode in CamoVault CV1 share codes. Gunsmith numbers entered from the game are preserved up to 999 instead of being incorrectly clipped at 100. The v1.6.1 cache version ensures the new attachment menus, share-code logic and source data are refreshed together across GitHub Pages updates.

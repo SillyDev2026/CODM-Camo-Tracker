@@ -1,9 +1,9 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.5.0';
-import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.5.0';
-import { readCloudProfile, writeCloudProfile } from './github.js?v=1.5.0';
-import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.5.0';
-import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.5.0';
-import { createGunsmith } from './gunsmith.js?v=1.6.0';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.6.1';
+import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.6.1';
+import { readCloudProfile, writeCloudProfile } from './github.js?v=1.6.1';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.6.1';
+import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.6.1';
+import { createGunsmith } from './gunsmith.js?v=1.6.1';
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
