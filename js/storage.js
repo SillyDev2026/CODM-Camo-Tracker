@@ -1,3 +1,4 @@
+import { cleanBuilds } from './loadouts.js';
 const DB_NAME = 'camovault-v1';
 const STORE = 'app';
 const KEY = 'state';
@@ -6,7 +7,7 @@ const DB_VERSION = 1;
 let databasePromise;
 
 function createProfile(name = 'Player 1') {
-  return { id: globalThis.crypto?.randomUUID?.() || `profile-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, createdAt: Date.now(), cloudSyncAt: 0, progress: {} };
+  return { id: globalThis.crypto?.randomUUID?.() || `profile-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, createdAt: Date.now(), cloudSyncAt: 0, progress: {}, builds: {} };
 }
 export { createProfile };
 
@@ -86,7 +87,8 @@ export function cleanProfile(value, fallbackName = 'Player') {
     name: typeof value.name === 'string' && value.name.trim() ? value.name.trim().slice(0, 40) : fallbackName,
     createdAt: Number.isFinite(value.createdAt) ? value.createdAt : Date.now(),
     cloudSyncAt: Number.isFinite(value.cloudSyncAt) ? value.cloudSyncAt : 0,
-    progress: cleanProgress(value.progress)
+    progress: cleanProgress(value.progress),
+    builds: cleanBuilds(value.builds)
   };
 }
 export function cleanState(value) {
