@@ -69,8 +69,32 @@ export function registerSeasonalWeapons(payload, now = Date.now()) {
     ROSTER_IDS.add(item.id);
     added++;
   }
-  return { added, upcoming };
+  return { added, upcoming, ...seasonTimeline(payload, now), checkedAt: now };
 }
+
+// Season data is curated from official CODM news. The timeline can grow indefinitely.
+export function seasonTimeline(payload, now = Date.now()) {
+  const seasons = [];
+  const ids = new Set();
+  for (const raw of Array.isArray(payload?.seasons) ? payload.seasons.slice(0, 48) : []) {
+    if (!raw || typeof raw.id !== 'string' || !/^20\d{2}-s(?:[1-9]|1[01])$/.test(raw.id) || ids.has(raw.id) ||
+        typeof raw.title !== 'string' || raw.title.length > 90 ||
+        typeof raw.startsAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(raw.startsAt) ||
+        !Number.isFinite(Date.parse(raw.startsAt)) ||
+        typeof raw.source !== 'string' || !/^https:\/\/www\.callofduty\.com\/blog\/20\d{2}\//.test(raw.source)) {
+      throw new Error('Invalid or duplicate season timeline entry');
+    }
+    ids.add(raw.id);
+    seasons.push({id:raw.id,title:raw.title,startsAt:raw.startsAt,source:raw.source});
+  }
+  seasons.sort((a,b) => Date.parse(a.startsAt)-Date.parse(b.startsAt));
+  const activeIndex = seasons.findLastIndex(season => Date.parse(season.startsAt) <= now);
+  const currentSeason = activeIndex >= 0 ? seasons[activeIndex] : null;
+  const nextSeason = seasons[activeIndex + 1] || null;
+  const pastSeasons = activeIndex >= 0 ? seasons.slice(0,activeIndex) : [];
+  return { currentSeason, nextSeason, pastSeasons, seasons };
+}
+
 export async function loadSeasonalWeapons(fetcher = globalThis.fetch) {
   const response = await fetcher('./data/seasonal-weapons.json', { cache: 'no-store' });
   if (!response.ok) throw new Error('Seasonal catalog unavailable');
