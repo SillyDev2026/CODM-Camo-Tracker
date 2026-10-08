@@ -1,17 +1,6 @@
 // Curated community attachment *names*. This is NOT a live Activision database.
 // "verified examples" means reported for the specific weapon, not an exhaustive
-// current Gunsmith inventory. "common" entries are suggestions, not confirmed fit.
-const COMMON = Object.freeze({
- muzzle:['Monolithic Suppressor','Tactical Suppressor','OWC Light Suppressor','OWC Light Compensator','RTC Light Muzzle Brake','MIP Light Flash Guard','Choke','Marauder Suppressor'],
- barrel:['MIP Light','MIP Extended Light Barrel','MIP Light Barrel (Short)','OWC Marksman','RTC Recon Tac Long'],
- optic:['Red Dot Sight','Classic Red Dot Sight','Holographic Sight','Tactical Scope','3X Tactical Scope 1','4X Tactical Scope'],
- stock:['No Stock','YKM Light Stock','YKM Combat Stock','MIP Strike Stock','OWC Skeleton Stock','RTC Steady Stock'],
- perk:['Sleight of Hand','FMJ','Fast Reload','Full Ammo','Long Shot'],
- laser:['OWC Laser - Tactical','MIP Laser 5mW','RTC Laser 1mW'],
- underbarrel:['Merc Foregrip','Strike Foregrip','Ranger Foregrip','Operator Foregrip','Tactical Foregrip A','Bipod'],
- ammunition:['40 Round Extended Mag','45 Round Extended Mag','Extended Mag','Fast Reload'],
- reargrip:['Stippled Grip Tape','Granulated Grip Tape','Rubberized Grip Tape']
-});
+// current Gunsmith inventory. All dropdowns are strictly keyed to the specific weapon ID.
 const SOURCES = Object.freeze({
  gunsmith:'https://blog.activision.com/call-of-duty/2020-08/Call-of-Duty-Mobile-Gunsmith',
  common:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/cod-mobile-gunsmith-weapons-setup/',
@@ -25,11 +14,82 @@ const SOURCES = Object.freeze({
  cbr4:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/CBR4-stats-attachment-skin',
  dlq:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/dl-q33-stats-attachment-skin/',
  newer:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-6-2025',
- staticHV:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/static-hv-cod-mobile-loadout'
+ staticHV:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/static-hv-cod-mobile-loadout',
+ fennec:'https://mobilematters.gg/cod-mobile/fennec-loadout-best',
+ uss9:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-10-2024',
+ switchblade:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-11-2024',
+ cx9:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-4-2025',
+ sks:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/sks-stats-attachment-skin',
+ type63:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-type-63-loadout',
+ bp50:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-bp50-loadout',
+ seasonal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-guns-cod-mobile-season-6-2025',
+ raal:'https://zilliongamer.com/call-of-duty-mobile/c/weapon-guide/best-cod-mobile-raal-mg-loadout'
 });
 // Each per-weapon item lists documented example choices, not every option.
 // Coverage is intentionally partial; never infer a complete set from loadout articles.
 const SPECIFIC = Object.freeze({
+
+ // Weapon-specific examples are individual documented configurations,
+ // NEVER an exhaustive list or compatibility guarantees for a future season.
+ 'smg:fennec':{source:SOURCES.fennec,slots:{
+  muzzle:['Monolithic Suppressor'],stock:['RTC Steady Stock'],
+  laser:['OWC Laser - Tactical'],ammunition:['Extended Mag A'],
+  reargrip:['Granulated Grip Tape']
+ }},
+ 'smg:uss-9':{source:SOURCES.uss9,slots:{
+  muzzle:['Monolithic Suppressor'],barrel:['13.1" First Responder'],
+  stock:['Standard-Issue Wood Stock'],ammunition:['.41 AE 32-Round Mags'],
+  reargrip:['Granulated Grip Tape']
+ }},
+ 'smg:switchblade-x9':{source:SOURCES.switchblade,slots:{
+  muzzle:['Tactical Suppressor'],barrel:['MIP Extended Light Barrel'],
+  stock:['YKM Light Stock'],ammunition:['Extended Mag A'],
+  reargrip:['Granulated Grip Tape']
+ }},
+ 'smg:cx-9':{source:SOURCES.cx9,slots:{
+  muzzle:['CX-23S'],stock:['CX-FR'],underbarrel:['Tactical Foregrip A'],
+  ammunition:['50 Round Drums'],reargrip:['CX-9 Ace Grip']
+ }},
+ 'marksman:sks':{source:SOURCES.sks,slots:{
+  muzzle:['Tactical Suppressor'],barrel:['MIP Extended Light Barrel'],
+  stock:['MIP Stalker Stock'],perk:['Disable'],reargrip:['Granulated Grip Tape']
+ }},
+ 'marksman:type-63':{source:SOURCES.type63,slots:{
+  muzzle:['GRU Silencer'],barrel:['16.4" Titanium'],stock:['KGB Pad'],
+  ammunition:['GRU Mag Clamp'],reargrip:['Field Tape']
+ }},
+ 'ar:bp50':{source:SOURCES.bp50,slots:{
+  muzzle:['Maxim Silencer'],barrel:['LEROY 438mm Rapid'],stock:['Removed Stock'],
+  ammunition:['7.62x54MMR 30 Round Mags'],reargrip:['Stippled Grip']
+ }},
+ 'ar:vargo-s':{source:SOURCES.seasonal,slots:{
+  muzzle:['Maxim Silencer'],barrel:['NAZARYAN 336MM AG'],
+  stock:['GABRIELYAN LP 33'],underbarrel:['M1941 Handstop'],
+  reargrip:['Polymer Grip']
+ }},
+ 'ar:hvk-30':{source:SOURCES.seasonal,slots:{
+  muzzle:['Tactical Suppressor'],barrel:['OWC Marksman'],
+  ammunition:['Large Caliber Ammo'],perk:['Sleight of Hand'],
+  reargrip:['Rubberized Grip Tape']
+ }},
+ 'ar:kilo-141':{source:SOURCES.seasonal,slots:{
+  muzzle:['Tactical Suppressor'],barrel:['MIP Extended Light Barrel'],
+  underbarrel:['Ranger Foregrip'],reargrip:['Granulated Grip Tape'],
+  ammunition:['Large Extended Mag B']
+ }},
+ 'lmg:mg42':{source:SOURCES.seasonal,slots:{
+  muzzle:['Scythe Compensator'],stock:['Krausnick S91mg'],
+  underbarrel:['MK6 PARA'],ammunition:['8MM Jaeger 100 Round Fast Mags'],
+  reargrip:['Leather Grip']
+ }},
+ 'lmg:raal-mg':{source:SOURCES.raal,slots:{
+  muzzle:['RAAL Monocore','Tactical Suppressor'],
+  barrel:['26.0" RAAL ArcForge','32.0" RAAL Line Breaker'],
+  stock:['Folded Stock','FSS Resistor'],
+  underbarrel:['Snatch Foregrip'],
+  reargrip:['Stippled Grip Tape','Granulated Grip Tape']
+ }},
+
  'smg:static-hv':{source:SOURCES.staticHV,slots:{
   barrel:['Supe-SIL Suppressed Barrel'],stock:['SL Tac Hive V.4 Stock'],
   laser:['Kimura RYL33 Laser Sight'],underbarrel:['Paracord Grip'],
@@ -112,15 +172,21 @@ const SPECIFIC = Object.freeze({
 });
 export const GUNSMITH_SOURCES = SOURCES;
 export const COVERED_WEAPON_IDS = Object.freeze(Object.keys(SPECIFIC));
-export function attachmentChoices(weaponId,slot){
- const found=SPECIFIC[weaponId],known=found?.slots?.[slot]||[];
- const common=COMMON[slot]||[];
- // For covered weapons, prefer documented examples; no generic options that
- // could misrepresent fit. The custom field handles anything not yet listed.
- const choices=found?known:common;
- return {choices:[...new Set(choices)],specific:!!found,verifiedSlot:known.length>0,source:found?.source||SOURCES.common,complete:false};
+
+// Deliberately no shared/class-wide options. All displayed choices originate
+// from SPECIFIC[weaponId][slot] and must have a weapon-specific source.
+export function attachmentChoices(weaponId, slot) {
+ const found=Object.hasOwn(SPECIFIC,weaponId)?SPECIFIC[weaponId]:null;
+ const known=found?.slots?.[slot]||[];
+ return {choices:[...new Set(known)],specific:!!found,verifiedSlot:known.length>0,
+  source:found?.source||null,complete:false};
 }
-export function attachmentCoverage(weaponId){
- const found=SPECIFIC[weaponId];
- return found?{label:'RESEARCHED EXAMPLES · NOT COMPLETE',source:found.source,knownSlots:Object.keys(found.slots).length,verified:true}:{label:'GENERAL SUGGESTIONS · WEAPON FIT UNVERIFIED',source:SOURCES.common,knownSlots:0,verified:false};
+export function attachmentCoverage(weaponId) {
+ const found=Object.hasOwn(SPECIFIC,weaponId)?SPECIFIC[weaponId]:null;
+ return found
+  ?{label:'WEAPON-SPECIFIC EXAMPLES · PARTIAL LIST',source:found.source,knownSlots:Object.keys(found.slots).length,verified:true}
+  :{label:'NO VERIFIED ATTACHMENT LIST FOR THIS WEAPON',source:null,knownSlots:0,verified:false};
+}
+export function isListedAttachment(weaponId,slot,value) {
+ return attachmentChoices(weaponId,slot).choices.includes(value);
 }
