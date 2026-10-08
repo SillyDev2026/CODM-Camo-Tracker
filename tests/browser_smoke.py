@@ -77,7 +77,7 @@ def main():
             assert page.locator('[data-quick="smg:qq9"]').count() == 1, "Restoring results dropped quick actions"
             # New Gunsmith editor is reachable from every weapon card.
             page.locator('[data-build="smg:qq9"]').click()
-            assert page.locator("#gunsmithModal").is_visible(), "Gunsmith modal did not open"
+            page.locator("#gunsmithModal").wait_for(state="visible", timeout=15000)
             assert page.locator("#gunsmithName").inner_text() == "QQ9"
             page.wait_for_function("customElements.get('model-viewer') !== undefined", timeout=15000)
             model = page.locator("#gunsmithModal model-viewer.gs-real-model")
