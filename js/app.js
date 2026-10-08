@@ -1,6 +1,7 @@
 import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion } from './catalog.js';
 import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js';
 import { readCloudProfile, writeCloudProfile } from './github.js';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js';
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
@@ -146,12 +147,14 @@ function openSettings() {
   if (activeDialog === 'drawer') closeDrawer();
   const selected = profile().id;
   $('profileSelect').innerHTML = state.profiles.map(p => `<option value="${safe(p.id)}" ${p.id === selected ? 'selected' : ''}>${safe(p.name)}</option>`).join('');
+  vaultStatus();
   $('settingsModal').hidden = false; $('modalBackdrop').hidden = false;
   activeDialog = 'settings'; document.body.style.overflow = 'hidden';
   $('settingsModal').querySelector('[data-action="close-settings"]').focus();
 }
 function closeSettings() {
   $('cloudToken').value = '';
+  $('vaultPassphrase').value = '';
   $('settingsModal').hidden = true; $('modalBackdrop').hidden = true;
   activeDialog = null; document.body.style.overflow = '';
 }
@@ -183,6 +186,44 @@ async function importBackup(file) {
     state.activeProfileId = incoming.id;
   } else throw new Error('This file is not a CamoVault backup');
   persist(); renderDashboard(); openSettings(); toast('Backup imported successfully');
+}
+function vaultStatus(message = '', error = false) {
+  const node = $('vaultStatus');
+  node.textContent = message || (hasSavedToken() ? 'Encrypted token saved on this device. Enter your vault password to unlock it.' : 'No encrypted GitHub token saved on this device.');
+  node.classList.toggle('error', error);
+}
+async function rememberGitHubToken() {
+  const { owner, repo, token } = formCloud();
+  const passphrase = $('vaultPassphrase').value;
+  try {
+    await saveTokenVault({ owner, repo, token }, passphrase);
+    $('vaultPassphrase').value = '';
+    vaultStatus('✓ Token encrypted and stored on this device. You can unlock it next time.');
+    toast('GitHub token saved securely');
+  } catch (error) { vaultStatus(error.message, true); }
+}
+async function restoreGitHubToken() {
+  const passphrase = $('vaultPassphrase').value;
+  try {
+    const { token, owner, repo } = await unlockTokenVault(passphrase);
+    $('cloudOwner').value = owner;
+    $('cloudRepo').value = repo;
+    $('cloudToken').value = token;
+    $('vaultPassphrase').value = '';
+    vaultStatus('✓ Token unlocked for this session. GitHub backup is ready.');
+    toast('GitHub token unlocked');
+  } catch (error) { vaultStatus(error.message, true); }
+}
+function removeGitHubToken() {
+  if (!hasSavedToken()) { vaultStatus('There is no saved token to forget.'); return; }
+  if (!confirm('Remove the encrypted GitHub token from this device? You will need to enter it again to save a new copy.')) return;
+  try {
+    forgetTokenVault();
+    $('cloudToken').value = '';
+    $('vaultPassphrase').value = '';
+    vaultStatus('Encrypted token removed from this device.');
+    toast('Stored GitHub token forgotten');
+  } catch (error) { vaultStatus('Could not remove token: ' + error.message, true); }
 }
 function formCloud() {
   return { owner: $('cloudOwner').value.trim(), repo: $('cloudRepo').value.trim(), token: $('cloudToken').value.trim() };
@@ -240,7 +281,10 @@ function handleAction(action) {
     const now = Date.now();
     for (const id of STARTER_GOLD) profile().progress[id] = { ...entry(id), gold: true, base: Object.fromEntries(BASIC_CAMOS.map(camo => [camo, true])), updatedAt: now };
     persist(); renderDashboard(); toast('Six Gold SMGs imported');
-  } else if (action === 'cloud-upload') uploadCloud();
+  } else if (action === 'vault-save') rememberGitHubToken();
+  else if (action === 'vault-unlock') restoreGitHubToken();
+  else if (action === 'vault-forget') removeGitHubToken();
+  else if (action === 'cloud-upload') uploadCloud();
   else if (action === 'cloud-download') downloadCloud();
 }
 function bindEvents() {

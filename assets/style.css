@@ -224,3 +224,13 @@ h1{font-size:clamp(30px,3.5vw,46px);font-weight:800;line-height:1.05;margin:10px
 
 /* v1.1 weapon-only armory */
 .armory-quick{margin-top:24px}.armory-quick-head{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:12px}.armory-quick-head h2{font-size:27px;text-transform:uppercase;margin:0}.armory-only{font-size:9px;font-weight:800;color:#92ab9a;letter-spacing:.1em;text-align:right}.category-chips{display:flex;gap:8px;overflow-x:auto;padding:3px 1px 12px;scrollbar-width:thin;scrollbar-color:#3b5046 transparent}.category-chip{border:1px solid #304139;background:#14201f;color:#b0c0b8;display:flex;justify-content:space-between;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;white-space:nowrap;min-width:max-content;font-weight:800;font-size:11px}.category-chip strong{font-size:10px;color:#a8bdad}.category-chip:hover{border-color:#719557;background:#1a2d24}.category-chip.active{background:var(--lime);border-color:var(--lime);color:#19251a}.category-chip.active strong{color:#29361d}.weapon-level{font-size:10px;font-weight:700;letter-spacing:.075em;color:#97aba2;margin-top:15px}.weapon-meter{margin-top:9px;height:4px}.weapon-card-footer{margin-top:11px}.weapons-head{margin-top:27px}@media(max-width:720px){.armory-quick{margin-top:19px}.armory-only{display:none}.armory-quick-head h2{font-size:24px}.category-chip{padding:10px 12px}.weapons-head{margin-top:24px}}@media(prefers-reduced-motion:reduce){button{transition:none}:root{scroll-behavior:auto}}
+
+/* Password-encrypted local vault for fine-grained GitHub PATs. */
+.token-vault{margin:15px 0 20px;padding:15px;border:1px solid #365145;background:#111f1d;border-radius:12px}
+.token-vault .settings-title{margin-bottom:6px}
+.token-vault>p{margin:7px 0 10px}
+.vault-password-label{font-size:11px;color:#aabbb3;font-weight:700;display:flex;flex-direction:column;gap:7px}
+.vault-password-label input{width:100%;background:#0c171b;color:#e5efea;border:1px solid #2f4146;border-radius:8px;padding:11px;font-size:12px}
+.vault-status{color:var(--lime)!important;font-weight:700;font-size:11px!important;margin:13px 0 0!important}
+.vault-status.error{color:#f3a99c!important}
+@media(max-width:390px){.token-vault{padding:12px}.token-vault .settings-actions button{flex:1 1 100%}}
