@@ -417,3 +417,26 @@ button{touch-action:manipulation}
 .gs-viewtop #gunModelLabel{font-size:9px;max-width:55%;text-align:right;line-height:1.4;white-space:normal}
 @media(max-width:880px){.gs-stage{height:clamp(230px,35vh,330px)}}
 @media(max-width:425px){.gs-stage{height:260px}.gs-viewtop #gunModelLabel{font-size:8px}}
+
+
+/* v1.6 Gunsmith source-aware attachment selectors and share-code workspace */
+.gs-source-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;border:1px solid #38564b;background:#172e2b;padding:10px 12px;margin:10px 0 12px;border-radius:9px}
+.gs-coverage{font-size:10px;letter-spacing:.05em;font-weight:900;color:#f8c886;line-height:1.5}
+.gs-coverage.is-specific{color:#caeb9c}
+.gs-source-row>a{font-size:10px;font-weight:800;color:#d6f89c;text-decoration:underline}
+.gs-slot select{width:100%;min-width:0;background:#0c1b21;border:1px solid #426255;border-radius:6px;padding:10px 28px 10px 8px;color:#eff7ed;font-size:11px;line-height:1.3;appearance:auto;min-height:39px}
+.gs-slot select:focus-visible,.gs-slot input:focus-visible,.gs-title-input textarea:focus-visible,.gs-title-input input:focus-visible{outline:2px solid #c9fb55;outline-offset:1px}
+.gs-slot select option{background:#14242a;color:#f5f7f7}
+.gs-slot input[hidden]{display:none}
+.gs-slot small{font-size:10px;line-height:1.4;color:#9eaead}
+.gs-share-panel{margin:22px 0 6px;padding:15px;background:#13292b;border:1px solid #456f5e;border-radius:12px;display:flex;flex-direction:column;gap:3px}
+.gs-share-panel .gs-section-head{margin-bottom:5px}
+.gs-share-mode{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10px;color:#b5c4c0;line-height:1.4;margin:8px 0 4px}
+.gs-share-pill{display:inline-flex;align-items:center;padding:5px 7px;background:#314b53;border:1px solid #568a8a;border-radius:6px;font-size:9px;font-weight:900;color:#d4f1f6;white-space:nowrap}
+.gs-share-pill.local{background:#42502d;border-color:#91a65b;color:#e6f9bd}
+.gs-share-panel .gs-title-input{margin:4px 0 7px}
+.gs-share-panel textarea{min-height:76px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;overflow-wrap:anywhere;word-break:break-all;line-height:1.5;white-space:pre-wrap}
+.gs-share-panel .gs-actions{margin:3px 0 9px}
+.gs-share-panel .gs-hint{margin:3px 0 8px;font-size:10px}
+.gs-editor{overscroll-behavior:contain}
+@media(max-width:425px){.gs-share-panel{padding:11px}.gs-coverage{font-size:9px}.gs-slots{grid-template-columns:1fr}.gs-share-mode{align-items:flex-start}}
