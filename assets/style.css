@@ -244,3 +244,77 @@ h1{font-size:clamp(30px,3.5vw,46px);font-weight:800;line-height:1.05;margin:10px
 .weapon-pill.aether{color:#d8c6ff;background:#403150}
 .zombies-header{background:radial-gradient(circle at 92% 12%,#47345a,transparent 58%)}
 @media(max-width:720px){.mode-tabs{gap:8px}.mode-tab{flex-wrap:wrap;gap:5px;font-size:11px;padding:12px 7px}.mode-tab small{width:100%;text-align:center}}
+
+
+/* CAMOVAULT v1.4: Responsive season center, quick resume, one-tap camo marking */
+:root{--lime:#c9fb55;--surface-hi:#152127}
+html{scroll-padding-top:90px}
+button{touch-action:manipulation}
+.season-hub{position:relative;border:1px solid #456047;border-radius:17px;margin:15px 0 13px;padding:19px 21px 16px;background:linear-gradient(125deg,#1b302b,#121e25 60%,#14201f);overflow:hidden}
+.season-hub:after{content:"";position:absolute;width:270px;height:270px;border:1px solid #8daa6440;border-radius:50%;right:-145px;top:-190px;pointer-events:none}
+.season-hub-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;position:relative;z-index:1}
+.season-hub-label{font-weight:900;letter-spacing:.17em;font-size:10px;color:var(--lime);margin-bottom:7px}
+.season-hub h2{font-size:clamp(24px,3vw,34px);text-transform:uppercase;margin:0 0 6px;font-weight:800;line-height:1}
+.season-hub p{font-size:11px;line-height:1.5;color:#b0c3b9;margin:0}
+.season-hub-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.season-button{border:1px solid #bde871;background:#c9fb55;color:#1b2a1a;padding:10px 12px;font-weight:900;font-size:11px;border-radius:9px;white-space:nowrap;min-height:39px}
+.season-button.secondary{background:#243b34;color:#e7f5e9;border-color:#48614f}
+.season-button:hover{filter:brightness(1.08)}
+.season-button:disabled{opacity:.6}
+.season-timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:16px 0 9px}
+.season-step{border:1px solid #3b5049;background:#11211f;border-radius:10px;padding:11px 12px;min-width:0}
+.season-step .name{display:block;font-size:9px;font-weight:900;letter-spacing:.13em;color:#87a69a}
+.season-step strong{display:block;font-size:12px;color:#eef6ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}
+.season-step small{display:block;font-size:10px;color:#8fa99e;margin-top:5px}
+.season-step.current{border-color:#a8d968;background:#243727}
+.season-step.current .name{color:#d6ffa5}
+.season-health{font-size:10px;color:#95aa9e;min-height:12px}
+.season-health.warning{color:#eac88b}
+.season-banner{margin:4px 0 15px;min-height:45px;line-height:1.5;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.season-banner[hidden]{display:none}
+.focus-strip{display:flex;align-items:center;gap:15px;padding:15px 17px;margin-top:20px;background:#111f23;border:1px solid #31444a;border-radius:13px;min-width:0}
+.focus-icon{width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#2d463b;color:var(--lime);display:grid;place-items:center;font-size:26px}
+.focus-info{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.focus-eyebrow{color:#96b0a3;letter-spacing:.15em;font-size:9px;font-weight:900}
+.focus-info strong{font-family:'Barlow Condensed',Impact,sans-serif;font-size:22px;line-height:1;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.focus-info span{font-size:11px;color:#99b0ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.focus-progress{width:115px;flex-shrink:0;text-align:right}
+.focus-progress strong{font-size:15px}
+.focus-progress .progress-track{margin-top:7px}
+.focus-resume{min-height:39px;background:var(--lime);border:0;border-radius:8px;padding:10px 13px;color:#1b281d;font-size:11px;font-weight:900;flex-shrink:0}
+.focus-resume:hover{background:#dcff99}
+.weapon-card{display:flex;flex-direction:column;align-items:stretch;transition:transform .15s ease,border-color .15s ease;background:linear-gradient(145deg,#132025,#10191e);min-height:199px}
+.weapon-card-open{flex:1;min-width:0;display:block;width:100%;border:0;background:transparent;color:inherit;text-align:left;padding:0}
+.weapon-card-open:focus-visible{outline:2px solid var(--lime)}
+.weapon-actions{display:flex;justify-content:space-between;align-items:center;gap:7px;border-top:1px solid #2c3c3d;margin-top:10px;padding-top:9px}
+.quick-action{background:#23372c;color:#d3ebbe;border:1px solid #456344;border-radius:7px;padding:7px 11px;min-height:34px;font-size:10px;font-weight:900;flex:1}
+.quick-action.active{background:#45522b;color:#ffeab2;border-color:#ad954b}
+.quick-action.zombies.active{background:#413058;border-color:#8068b2;color:#e0d1ff}
+.favorite-button{min-width:37px;min-height:34px;border-radius:7px;border:1px solid #3b4c49;background:#19292e;color:#a6bbb5;font-size:19px}
+.favorite-button.active{color:#f7d377;border-color:#9b7a4e}
+.weapon-card-top{margin-bottom:13px}
+.weapon-card-footer{margin-top:10px;border:0;padding-top:0}
+.weapon-title{font-size:clamp(19px,2.2vw,23px)}
+.weapon-grid{align-items:stretch}
+.filter[data-filter=season].active{background:#32533b;color:#dcffae;border-color:#688c5b}
+.filter[data-filter=recent].active{background:#2d4352;color:#d3f0ff;border-color:#658599}
+@media(max-width:1000px){.season-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}.season-step:last-child{grid-column:1/-1}}
+@media(max-width:720px){
+  .season-hub{margin-top:10px;padding:16px}
+  .season-hub-heading{align-items:flex-start;flex-direction:column;gap:13px}
+  .season-hub-actions{width:100%;justify-content:stretch}
+  .season-button{flex:1}
+  .season-timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .season-step{padding:10px}
+  .season-step:last-child{grid-column:1/-1}
+  .focus-strip{flex-wrap:wrap;gap:9px;padding:13px}
+  .focus-icon{width:36px;height:36px}
+  .focus-progress{flex:1 1 100px}
+  .focus-resume{min-width:100px;flex:1}
+  .focus-info strong{font-size:21px}
+  .weapon-card{min-height:192px}
+  .weapon-actions{gap:5px}
+  .quick-action{padding:7px 5px}
+}
+@media(max-width:390px){.weapon-card{padding:10px;min-height:204px}.weapon-title{font-size:18px}.weapon-card-footer{font-size:9px}.focus-progress{flex:1}.season-button{font-size:10px}.focus-resume{width:100%}}
+@media(prefers-reduced-motion:reduce){.weapon-card{transition:none}}
