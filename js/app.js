@@ -1,8 +1,8 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.7.0';
-import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.7.0';
-import { readCloudProfile, writeCloudProfile } from './github.js?v=1.7.0';
-import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.7.0';
-import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.7.0';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.7.1';
+import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.7.1';
+import { readCloudProfile, writeCloudProfile } from './github.js?v=1.7.1';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.7.1';
+import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.7.1';
 // Optional 3D/Gunsmith code is loaded only when a user opens a build.
 
 const $ = id => document.getElementById(id);
@@ -213,8 +213,8 @@ async function openBuild(id, trigger) {
   if (!weapon) return;
   try {
     if (!gunsmithPromise) gunsmithPromise = Promise.all([
-      import('./gunsmith.js?v=1.7.0'),
-      import('./attachment-library.js?v=1.7.0')
+      import('./gunsmith.js?v=1.7.1'),
+      import('./attachment-library.js?v=1.7.1')
     ]).then(([{createGunsmith},{rememberAttachment,forgetAttachment}]) =>
       createGunsmith({
         getBuild:id=>profile().builds?.[id],
