@@ -1,4 +1,4 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion } from './catalog.js';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js';
 import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js';
 import { readCloudProfile, writeCloudProfile } from './github.js';
 import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js';
@@ -13,6 +13,9 @@ const lastUpdated = entry => Number(entry.updatedAt) || 0;
 let state;
 let currentView = 'weapons';
 let activeCategory = null;
+let currentMode = 'mp';
+let seasonStatus = {added:0,upcoming:[]};
+let seasonOffline = false;
 let currentFilter = 'all';
 let selectedId = null;
 let saveTimer;
@@ -41,7 +44,7 @@ function persist() {
 }
 function mutate(id, apply, repaintDrawer = false) {
   if (!BY_ID.has(id)) return;
-  const draft = { ...entry(id), base: { ...(entry(id).base || {}) } };
+  const draft = { ...entry(id), base: { ...(entry(id).base || {}) }, zombies: { ...(entry(id).zombies || {}) } };
   apply(draft);
   draft.updatedAt = Date.now();
   profile().progress[id] = draft;
@@ -52,27 +55,59 @@ function renderNavigation() {
   $('categoryNav').innerHTML = GROUPS.map(group => `<button type="button" class="side-link ${currentView === 'category' && activeCategory === group.id ? 'active' : ''}" data-category="${group.id}"><span class="side-ico">${symbols[group.id]}</span><span>${safe(group.name)}</span><span class="count">${group.weapons.split('|').length}</span></button>`).join('');
   $('categoryChips').innerHTML = `<button type="button" class="category-chip ${activeCategory === null ? 'active' : ''}" data-nav="weapons"><span>All weapons</span><strong>${WEAPONS.length}</strong></button>` + GROUPS.map(group => `<button type="button" class="category-chip ${activeCategory === group.id ? 'active' : ''}" data-category="${group.id}"><span>${safe(group.short)}</span><strong>${goldTotal(progress(),group.id)}/${group.weapons.split('|').length}</strong></button>`).join('');
   document.querySelectorAll('[data-nav]').forEach(button => { if (!button.classList.contains('category-chip')) button.classList.toggle('active', button.dataset.nav === currentView); });
-  $('breadcrumb').textContent = currentView === 'category' ? GROUP_BY_ID.get(activeCategory).short : 'WEAPONS';
+  document.querySelectorAll('[data-mode]').forEach(b=>{b.classList.toggle('active',b.dataset.mode===currentMode);b.setAttribute('aria-pressed',String(b.dataset.mode===currentMode));});
+  $('breadcrumb').textContent = currentMode==='zombies'?'ZOMBIES':currentView==='category'?GROUP_BY_ID.get(activeCategory).short:'WEAPONS';
 }
 function statCard(label, count, caption, css, icon, target = WEAPONS.length) {
   return `<div class="stat-card"><div class="stat-label">${label} <span class="stat-miniicon">${icon}</span></div><div class="stat-big ${css}">${count}<span style="font-size:16px;color:#708580">/${target}</span></div><div class="stat-desc">${caption}</div><div class="stat-progress"><span style="width:${pct(count, target)}%"></span></div></div>`;
 }
-function renderStats() {
-  const p = progress();
-  $('statsGrid').innerHTML = [
-    statCard('GOLD UNLOCKED', completedCount(p, 'gold'), 'Gold on individual weapons', 'gold', '✦'),
-    statCard('PLATINUM UNLOCKED', completedCount(p, 'platinum'), 'Personally confirmed unlocks', 'platinum', '⬡'),
-    statCard('DIAMOND UNLOCKED', completedCount(p, 'diamond'), 'Individual weapon mastery', 'diamond', '◇'),
-    statCard('DAMASCUS UNLOCKED', completedCount(p, 'damascus'), 'Personally confirmed unlocks', 'damascus', '✧')
+function aetherEligible(w){return Object.prototype.hasOwnProperty.call(AETHER_KILLS,w.category);}
+function aether(w){return entry(w.id).zombies||{};}
+function renderStats(){
+  if(currentMode==='zombies'){
+    const pool=WEAPONS.filter(aetherEligible),n=pool.length,done=pool.filter(w=>aether(w).aetherCrystal).length;
+    const started=pool.filter(w=>Number(aether(w).matches)>0).length,wins=pool.reduce((sum,w)=>sum+Number(aether(w).matches||0),0);
+    $('statsGrid').innerHTML=[
+      statCard('AETHER CRYSTAL',done,'Confirmed Zombies unlocks','diamond','✧',n),
+      statCard('IN PROGRESS',started,'Weapons with qualified wins','gold','◈',n),
+      statCard('ELIGIBLE WEAPONS',n,'Known Aether weapon classes','platinum','⌖',WEAPONS.length),
+      statCard('QUALIFIED MATCHES',wins,'Total weapon-match credits','damascus','↗',Math.max(wins,n*AETHER_MATCHES))
+    ].join('');return;
+  }
+  const p=progress();
+  $('statsGrid').innerHTML=[
+    statCard('GOLD UNLOCKED',completedCount(p,'gold'),'Gold on individual weapons','gold','✦'),
+    statCard('PLATINUM UNLOCKED',completedCount(p,'platinum'),'Personally confirmed unlocks','platinum','⬡'),
+    statCard('DIAMOND UNLOCKED',completedCount(p,'diamond'),'Individual weapon mastery','diamond','◇'),
+    statCard('DAMASCUS UNLOCKED',completedCount(p,'damascus'),'Personally confirmed unlocks','damascus','✧')
   ].join('');
 }
-function matchesFilter(weapon) {
-  const e = entry(weapon.id);
-  const started = Boolean(e.gold || e.platinum || e.damascus || e.diamond || (e.level > 0) || (e.diamondCount > 0) || Object.values(e.base || {}).some(Boolean));
-  if (currentFilter === 'gold') return Boolean(e.gold);
-  if (currentFilter === 'unstarted') return !started;
-  if (currentFilter === 'inprogress') return started && !e.gold;
-  if (currentFilter === 'favorites') return Boolean(e.favorite);
+function renderSeasonBanner(){
+  const node=$('seasonBanner'),incoming=seasonStatus.upcoming||[];
+  if(incoming.length){
+    const w=incoming[0],day=new Date(w.releaseAt).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/Los_Angeles'});
+    node.innerHTML=`<strong>UPCOMING:</strong> ${safe(w.name)} (${safe(GROUP_BY_ID.get(w.category).short)}) joins the tracker ${safe(day)}. <a href="${safe(w.source)}" target="_blank" rel="noopener noreferrer">Official news ↗</a>`;
+  }else if(seasonStatus.added)node.textContent=`Seasonal catalog loaded: ${seasonStatus.added} new weapon(s).`;
+  else if(seasonOffline)node.textContent='Offline roster active. Reconnect to check for seasonal weapons.';
+  else{node.hidden=true;return;}
+  node.hidden=false;
+}
+function matchesFilter(w){
+  const e=entry(w.id);
+  if(currentMode==='zombies'){
+    if(!aetherEligible(w))return false;
+    const z=aether(w),started=Boolean(z.aetherCrystal||Number(z.matches)>0);
+    if(currentFilter==='gold')return Boolean(z.aetherCrystal);
+    if(currentFilter==='inprogress')return started&&!z.aetherCrystal;
+    if(currentFilter==='unstarted')return !started;
+    if(currentFilter==='favorites')return Boolean(e.favorite);
+    return true;
+  }
+  const started=Boolean(e.gold||e.platinum||e.damascus||e.diamond||(e.level>0)||(e.diamondCount>0)||Object.values(e.base||{}).some(Boolean));
+  if(currentFilter==='gold')return Boolean(e.gold);
+  if(currentFilter==='inprogress')return started&&!e.gold;
+  if(currentFilter==='unstarted')return !started;
+  if(currentFilter==='favorites')return Boolean(e.favorite);
   return true;
 }
 function getVisibleWeapons() {
@@ -80,32 +115,35 @@ function getVisibleWeapons() {
   const sort = $('sortBy').value;
   let visible = WEAPONS.filter(weapon => (!activeCategory || weapon.category === activeCategory) && weapon.name.toLocaleLowerCase().includes(search) && matchesFilter(weapon));
   if (sort === 'az') visible = visible.sort((a, b) => a.name.localeCompare(b.name));
-  if (sort === 'progress') visible = visible.sort((a, b) => weaponCompletion(entry(b.id)) - weaponCompletion(entry(a.id)));
+  if (sort === 'progress') visible = visible.sort((a, b) => currentMode==='zombies'?Number(aether(b).matches||0)-Number(aether(a).matches||0):weaponCompletion(entry(b.id))-weaponCompletion(entry(a.id)));
   if (sort === 'recent') visible = visible.sort((a, b) => lastUpdated(entry(b.id)) - lastUpdated(entry(a.id)));
   if (sort === 'level') visible = visible.sort((a, b) => (entry(b.id).level || 0) - (entry(a.id).level || 0));
   return visible;
 }
 function renderWeaponGrid() {
   const visible = getVisibleWeapons();
-  const title = activeCategory ? GROUP_BY_ID.get(activeCategory).name : 'All weapons';
+  const title = activeCategory ? GROUP_BY_ID.get(activeCategory).name : currentMode==='zombies'?'Zombies weapons':'All weapons';
+  $('completedFilter').textContent=currentMode==='zombies'?'Aether ✓':'Gold ✓';
   $('weaponsTitle').childNodes[0].textContent = `${title} `;
   $('weaponCount').textContent = visible.length.toString().padStart(2, '0');
   $('weaponGrid').innerHTML = visible.map(weapon => {
     const e = entry(weapon.id);
-    const tags = COMPLETIONIST.filter(key => e[key]).map(key => `<span class="weapon-pill ${key}">${safe(key.toUpperCase())}</span>`).join('');
-    const rank = weaponCompletion(e);
+    const tags = currentMode==='zombies'?(aether(weapon).aetherCrystal?'<span class="weapon-pill aether">AETHER CRYSTAL</span>':''):COMPLETIONIST.filter(key=>e[key]).map(key=>`<span class="weapon-pill ${key}">${safe(key.toUpperCase())}</span>`).join('');
+    const rank=currentMode==='zombies'?Number(aether(weapon).matches||0):weaponCompletion(e);
+    const max=currentMode==='zombies'?Number(aether(weapon).target||AETHER_MATCHES):10;
     const level = Number(e.level) > 0 ? `LVL ${e.level}${e.maxLevel ? `/${e.maxLevel}` : ''}` : 'LEVEL NOT SET';
-    return `<button class="weapon-card" type="button" data-weapon="${weapon.id}" aria-label="Edit ${safe(weapon.name)} camo progress"><div class="weapon-card-top"><span class="weapon-class-label">${GROUP_BY_ID.get(weapon.category).short}</span><span class="favorite-symbol ${e.favorite ? 'on' : ''}">${e.favorite ? '★' : '☆'}</span></div><div class="weapon-title" title="${safe(weapon.name)}">${safe(weapon.name)}</div><div class="weapon-tags">${tags || '<span class="weapon-pill">NOT COMPLETED</span>'}</div><div class="weapon-level">${safe(level)}</div><div class="progress-track weapon-meter"><div class="progress-fill" style="width:${pct(rank,10)}%"></div></div><div class="weapon-card-footer"><span>${rank}/10 CAMO MILESTONES</span><span class="arrow">↗</span></div></button>`;
+    return `<button class="weapon-card" type="button" data-weapon="${weapon.id}" aria-label="Edit ${safe(weapon.name)} camo progress"><div class="weapon-card-top"><span class="weapon-class-label">${GROUP_BY_ID.get(weapon.category).short}</span><span class="favorite-symbol ${e.favorite ? 'on' : ''}">${e.favorite ? '★' : '☆'}</span></div><div class="weapon-title" title="${safe(weapon.name)}">${safe(weapon.name)}</div><div class="weapon-tags">${tags || '<span class="weapon-pill">NOT COMPLETED</span>'}</div><div class="weapon-level">${safe(level)}</div><div class="progress-track weapon-meter"><div class="progress-fill" style="width:${pct(rank,max)}%"></div></div><div class="weapon-card-footer"><span>${rank}/${max} ${currentMode==='zombies'?'QUALIFYING WINS':'CAMO MILESTONES'}</span><span class="arrow">↗</span></div></button>`;
   }).join('');
   $('emptyState').hidden = visible.length > 0;
+  $('emptyState').querySelector('p').textContent=currentMode==='zombies'&&activeCategory&&!aetherEligible({category:activeCategory})?'No verified Aether Crystal challenge for this class.':'Try a different search or camo filter.';
   document.querySelectorAll('[data-filter]').forEach(button => button.classList.toggle('active', button.dataset.filter === currentFilter));
 }
 function renderDashboard() {
   $('profileName').textContent = profile().name;
   $('avatar').textContent = profile().name.charAt(0).toUpperCase() || 'P';
-  $('pageTitle').innerHTML = activeCategory ? `${safe(GROUP_BY_ID.get(activeCategory).name)}<span class="period">.</span>` : 'Your weapon armory<span class="period">.</span>';
-  $('pageSubtitle').textContent = activeCategory ? 'Check off Gold, Platinum, Damascus, Diamond, and basic weapon camos.' : 'Every weapon class in one place. No equipment, perks, or scorestreaks.';
-  renderNavigation(); renderStats(); renderWeaponGrid();
+  $('pageTitle').innerHTML=activeCategory?`${safe(GROUP_BY_ID.get(activeCategory).name)}<span class="period">.</span>`:currentMode==='zombies'?'Your Zombies grind<span class="period">.</span>':'Your weapon armory<span class="period">.</span>';
+  $('pageSubtitle').textContent=currentMode==='zombies'?'Track Undead Siege Aether Crystal separately from Multiplayer.':activeCategory?'Check off Gold, Platinum, Damascus, Diamond, and basic weapon camos.':'Every weapon class in one place. No equipment, perks, or scorestreaks.';
+  renderNavigation(); renderSeasonBanner(); renderStats(); renderWeaponGrid();
 }
 function go(view, category = null) {
   currentView = view === 'category' && GROUP_BY_ID.has(category) ? 'category' : 'weapons';
@@ -342,6 +380,7 @@ function bindEvents() {
 }
 
 async function boot() {
+  try{seasonStatus=await loadSeasonalWeapons();}catch(error){seasonOffline=true;console.warn('Seasonal catalog unavailable',error);}
   state = await loadState();
   $('dateBadge').textContent = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()).toUpperCase();
   bindEvents(); renderDashboard();
