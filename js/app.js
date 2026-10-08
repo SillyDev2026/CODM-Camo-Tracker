@@ -3,7 +3,7 @@ import { loadState, saveState, cleanState, cleanProfile, createProfile } from '.
 import { readCloudProfile, writeCloudProfile } from './github.js?v=1.5.0';
 import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.5.0';
 import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.5.0';
-import { createGunsmith } from './gunsmith.js?v=1.5.0';
+import { createGunsmith } from './gunsmith.js?v=1.6.0';
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
