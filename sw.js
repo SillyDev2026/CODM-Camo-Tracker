@@ -1,8 +1,15 @@
 // Caches only this site's public files. No data, credentials, or GitHub API calls are cached.
-const CACHE = 'camovault-assets-v1.6.3';
-const FILES = ['./', './index.html', './assets/style.css', './assets/favicon.svg', './js/catalog.js', './data/seasonal-weapons.json', './js/storage.js', './js/github.js', './js/token-vault.js', './js/app.js', './js/enhancements.js', './js/loadouts.js', './js/gunsmith.js', './js/attachments.js', './js/build-share.js', './js/weapon-viewer.js', './assets/vendor/model-viewer.min.js', './assets/models/manifest.json', './assets/models/ar.glb', './assets/models/smg.glb', './assets/models/lmg.glb', './assets/models/sniper.glb', './assets/models/marksman.glb', './assets/models/shotgun.glb', './assets/models/pistol.glb', './assets/models/melee.glb', './assets/models/launcher.glb', './manifest.webmanifest'];
+const CACHE = 'camovault-assets-v1.6.4';
+// Don't download 3 MB of optional 3D meshes as a prerequisite for activating
+// a new version of the camo tracker. A single missing asset must not block SW.
+const CORE = ['./', './index.html', './assets/style.css', './js/app.js', './js/catalog.js',
+  './js/storage.js', './js/github.js', './js/token-vault.js', './js/enhancements.js',
+  './data/seasonal-weapons.json', './manifest.webmanifest'];
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then(async cache => {
+    await Promise.allSettled(CORE.map(url => cache.add(url)));
+    await self.skipWaiting();
+  }));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(Promise.all([caches.keys().then(names => Promise.all(names.filter(name => name.startsWith('camovault-assets-') && name !== CACHE).map(name => caches.delete(name)))), self.clients.claim()]));
@@ -24,6 +31,18 @@ self.addEventListener('fetch', event => {
       if (response.ok) { const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(request, copy)); }
       return response;
     }).catch(() => caches.match(request, {ignoreSearch:true})));
+    return;
+  }
+  // Optional 3D assets are saved only after users open a weapon inspector.
+  // Keep offline use possible without delaying the rest of the website.
+  if (url.pathname.endsWith('.glb')) {
+    event.respondWith(caches.match(request, {ignoreSearch:true}).then(cached => cached || fetch(request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
+      }
+      return response;
+    })));
     return;
   }
   // Network first for scripts, styles, and catalog data to prevent mixed-version startup.
