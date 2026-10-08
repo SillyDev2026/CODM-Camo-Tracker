@@ -11,7 +11,7 @@ export const defaultBuild=()=>({active:0,presets:[1,2,3].map(i=>({name:'Build '+
 const obj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
 export function sanitizeBuild(raw,category){
  const value=obj(raw)?raw:{},presets=Array.isArray(value.presets)?value.presets:[];
- return {active:Number.isInteger(value.active)?Math.max(0,Math.min(2,value.active)):0,library,presets:[0,1,2].map(i=>{
+ return {active:Number.isInteger(value.active)?Math.max(0,Math.min(2,value.active)):0,presets:[0,1,2].map(i=>{
   const p=obj(presets[i])?presets[i]:{},slots={},stats={},allowed=slotsFor(category);
   if(obj(p.slots))for(const slot of allowed) {
    const name=p.slots[slot];
