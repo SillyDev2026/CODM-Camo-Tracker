@@ -29,11 +29,13 @@ test('model viewer runtime is self-hosted and licensed',()=>{
  assert.match(license,/Apache License/);
 });
 
-test('service worker precaches all local models and runtime',()=>{
+test('service worker keeps core app available without eager-downloading any 3D assets',()=>{
  const sw=fs.readFileSync(new URL('../sw.js',import.meta.url),'utf8');
- for(const group of groups)assert.ok(sw.includes("'./assets/models/"+group+".glb'"));
- assert.ok(sw.includes("'./assets/vendor/model-viewer.min.js'"));
  assert.match(sw,/camovault-assets-v1\.\d+\.\d+/);
- assert.ok(sw.includes("'./js/attachments.js'"));
- assert.ok(sw.includes("'./js/build-share.js'"));
+ assert.ok(sw.includes("'./js/app.js'"));
+ assert.ok(sw.includes("'./js/catalog.js'"));
+ assert.ok(sw.includes('Promise.allSettled(CORE.map'));
+ assert.ok(sw.includes("url.pathname.endsWith('.glb')"));
+ assert.doesNotMatch(sw,/cache\.addAll\(FILES\)/);
+ assert.doesNotMatch(sw,/\.\/assets\/models\/ar\.glb'\s*,/);
 });
