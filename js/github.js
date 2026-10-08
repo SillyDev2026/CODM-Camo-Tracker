@@ -48,7 +48,7 @@ export async function writeCloudProfile(token, owner, repo, profile) {
   if (remote.profile && Number(remote.profile.savedAt || 0) > Number(profile.cloudSyncAt || 0)) {
     throw new Error('GitHub has a newer backup. Download it first or export a local backup before overwriting.');
   }
-  const payload = { version: 1, id: profile.id, name: profile.name, createdAt: profile.createdAt, progress: profile.progress, savedAt: Date.now() };
+  const payload = { version: 1, id: profile.id, name: profile.name, createdAt: profile.createdAt, progress: profile.progress, builds: profile.builds || {}, savedAt: Date.now() };
   const path = cloudPath(profile);
   const body = { message: `Backup CODM camo progress (${profile.name})`, content: encodeUtf8Base64(JSON.stringify(payload, null, 2)) };
   if (remote.sha) body.sha = remote.sha;
