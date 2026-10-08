@@ -1,8 +1,9 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.4.1';
-import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.4.1';
-import { readCloudProfile, writeCloudProfile } from './github.js?v=1.4.1';
-import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.4.1';
-import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.4.1';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.5.0';
+import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.5.0';
+import { readCloudProfile, writeCloudProfile } from './github.js?v=1.5.0';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.5.0';
+import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.5.0';
+import { createGunsmith } from './gunsmith.js?v=1.5.0';
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
@@ -24,6 +25,7 @@ let selectedId = null;
 let saveTimer;
 let toastTimer;
 let activeDialog = null;
+let gunsmith = null;
 
 function saveViewPreference(){try{localStorage.setItem('camovault-view-v1',JSON.stringify({mode:currentMode,category:activeCategory}));}catch{}}
 function restoreViewPreference(){try{const v=JSON.parse(localStorage.getItem('camovault-view-v1')||'null');if(v?.mode==='zombies')currentMode='zombies';if(v?.category && GROUP_BY_ID.has(v.category)){activeCategory=v.category;currentView='category';}}catch{}}
@@ -180,7 +182,7 @@ function go(view, category = null) {
 function renderZombiesDrawer(w,e,group,oldScroll) {
   const z=e.zombies||{},target=Number(z.target)||AETHER_MATCHES,eligible=aetherEligible(w);
   const kills=Number(z.killsPerMatch)||AETHER_KILLS[w.category],count=Number(z.matches)||0;
-  const start='<div class="drawer-header zombies-header"><div class="drawer-topline"><span class="drawer-kicker">'+safe(group.name.toUpperCase())+' / ZOMBIES</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button></div><h2 class="drawer-title">'+safe(w.name)+'</h2><div class="drawer-subtitle">UNDEAD SIEGE · AETHER CRYSTAL</div><button type="button" class="drawer-fav '+(e.favorite?'on':'')+'" data-action="toggle-favorite">'+(e.favorite?'★ Saved':'☆ Save weapon')+'</button></div><div class="drawer-body">';
+  const start='<div class="drawer-header zombies-header"><div class="drawer-topline"><span class="drawer-kicker">'+safe(group.name.toUpperCase())+' / ZOMBIES</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">'+safe(w.name)+'</h2><div class="drawer-subtitle">UNDEAD SIEGE · AETHER CRYSTAL</div><button type="button" class="drawer-fav '+(e.favorite?'on':'')+'" data-action="toggle-favorite">'+(e.favorite?'★ Saved':'☆ Save weapon')+'</button></div><div class="drawer-body">';
   const checklist=eligible?'<section class="drawer-section"><div class="drawer-section-head">Aether Crystal <small>Manual unlock</small></div><p class="drawer-explainer">A qualified match must meet the zombie-kill target in completed Hard/Nightmare Undead Siege. Verify your camo in-game before marking unlocked.</p><label class="camo-item '+(z.aetherCrystal?'complete':'')+'"><input type="checkbox" data-zombie-check="aetherCrystal" '+(z.aetherCrystal?'checked':'')+'><span class="camo-icon">✧</span><span class="textcol">Aether Crystal</span><small>'+(z.aetherCrystal?'UNLOCKED':'NOT YET')+'</small></label></section><section class="drawer-section"><div class="drawer-section-head">Qualified matches <small>'+count+'/'+target+'</small></div><div class="diamond-meter"><label>Wins<input type="number" inputmode="numeric" min="0" max="100000" data-zombie-number="matches" value="'+count+'"></label><span class="slash">/</span><label>Target<input type="number" inputmode="numeric" min="1" max="100000" data-zombie-number="target" value="'+target+'"></label></div><div class="progress-track"><div class="progress-fill" style="width:'+pct(count,target)+'%"></div></div><div class="level-fields"><label>Required zombie kills per match<input type="number" inputmode="numeric" min="1" max="100000" data-zombie-number="killsPerMatch" value="'+kills+'"></label></div><p class="drawer-explainer">Default: '+AETHER_KILLS[w.category]+' kills across '+AETHER_MATCHES+' qualifying wins. Requirements may change; verify in-game.</p></section>':'<section class="drawer-section"><p class="drawer-explainer">Aether Crystal requirements for this weapon class are not verified. Multiplayer tracking is available.</p></section>';
   const fields='<section class="drawer-section"><div class="drawer-section-head">Weapon level</div><div class="level-fields"><label>Current<input type="number" min="0" max="200" data-number="level" value="'+(e.level||0)+'"></label><label>Max<input type="number" min="0" max="200" data-number="maxLevel" value="'+(e.maxLevel||0)+'"></label></div></section><section class="drawer-section"><div class="drawer-section-head">Notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Zombies grind notes…">'+safe(e.notes||'')+'</textarea></section><div class="drawer-bottom-note">✓ Zombies progress is independent of Multiplayer camos.</div></div>';
   $('drawerInner').innerHTML=start+checklist+fields;
@@ -196,8 +198,17 @@ function renderDrawer() {
   const label = group.targetUnit === 'matches' ? 'Qualified matches (usually 10 weapon kills each)' : group.targetUnit === 'kills' ? 'Total weapon kills' : 'Required objectives (check in-game)';
   const bases = BASIC_CAMOS.map(camo => `<label class="camo-item ${e.base?.[camo] || e.gold ? 'complete' : ''}"><input type="checkbox" data-basic="${camo}" ${e.base?.[camo] || e.gold ? 'checked' : ''}><span class="camo-icon">◈</span><span class="textcol">${camo}</span><small>${e.base?.[camo] || e.gold ? 'COMPLETE' : 'NOT YET'}</small></label>`).join('');
   const tiers = COMPLETIONIST.map(camo => `<label class="complete-tile ${camo} ${e[camo] ? 'complete' : ''}"><input type="checkbox" data-tier="${camo}" ${e[camo] ? 'checked' : ''}><span class="tile-icon">${tileSymbols[camo]}</span><span class="tile-title">${camo}</span><span class="tile-sub">${e[camo] ? 'UNLOCKED' : 'NOT YET UNLOCKED'}</span></label>`).join('');
-  $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Basic camo series <small>${basicDone}/6 tracked</small></div><p class="drawer-explainer">Mark each camo family after you finish its challenges. Requirements vary by weapon—check Gunsmith in-game. Gold automatically checks all six families here.</p><div class="camo-list">${bases}</div></section><section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
+  $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Basic camo series <small>${basicDone}/6 tracked</small></div><p class="drawer-explainer">Mark each camo family after you finish its challenges. Requirements vary by weapon—check Gunsmith in-game. Gold automatically checks all six families here.</p><div class="camo-list">${bases}</div></section><section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
   $('weaponDrawer').scrollTop = oldScroll;
+}
+function openBuild(id, trigger) {
+  const weapon = BY_ID.get(id);
+  if (!weapon || !gunsmith) return;
+  if (activeDialog === 'drawer') closeDrawer();
+  if (activeDialog === 'settings') closeSettings();
+  closeMenu();
+  gunsmith.open(weapon, trigger);
+  activeDialog = 'build';
 }
 function openDrawer(id) {
   if (!BY_ID.has(id)) return;
@@ -335,6 +346,7 @@ function handleAction(action) {
   else if (action === 'view-weapons') go('weapons');
   else if (action === 'clear-filters') { $('weaponSearch').value = ''; currentFilter = 'all'; renderWeaponGrid(); }
   else if (action === 'close-drawer') closeDrawer();
+  else if (action === 'open-build' && selectedId) openBuild(selectedId);
   else if (action === 'export') exportBackup();
   else if (action === 'import') $('importFile').click();
   else if (action === 'toggle-favorite' && selectedId) mutate(selectedId, e => { e.favorite = !e.favorite; }, true);
@@ -373,6 +385,8 @@ function bindEvents() {
     if(favorite){const id=favorite.dataset.fav;if(BY_ID.has(id))mutate(id,e=>{e.favorite=!e.favorite;});return;}
     const mode=event.target.closest('[data-mode]');
     if(mode){currentMode=mode.dataset.mode==='zombies'?'zombies':'mp';currentFilter='all';renderDashboard();closeMenu();saveViewPreference();return;}
+    const buildButton = event.target.closest('[data-build]');
+    if (buildButton) { openBuild(buildButton.dataset.build, buildButton); return; }
     const weapon = event.target.closest('[data-weapon]');
     if (weapon) { openDrawer(weapon.dataset.weapon); return; }
     const category = event.target.closest('[data-category]');
@@ -422,7 +436,7 @@ function bindEvents() {
   $('menuToggle').addEventListener('click', () => { $('sidebar').classList.add('open'); $('mobileShade').hidden = false; });
   $('mobileShade').addEventListener('click', closeMenu);
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { if (activeDialog === 'settings') closeSettings(); else if (activeDialog === 'drawer') closeDrawer(); else closeMenu(); }
+    if (event.key === 'Escape') { if (activeDialog === 'build') gunsmith?.close(); else if (activeDialog === 'settings') closeSettings(); else if (activeDialog === 'drawer') closeDrawer(); else closeMenu(); }
     if (event.key === '/' && !activeDialog && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) { event.preventDefault(); $('weaponSearch').focus(); }
   });
   window.addEventListener('pagehide', () => { if (state) saveState(state).catch(() => {}); });
@@ -436,6 +450,12 @@ async function boot() {
   const missing = mandatory.filter(id => !$(id));
   if (missing.length) throw new Error('The website files are out of sync: ' + missing.join(', '));
   $('dateBadge').textContent = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()).toUpperCase();
+  gunsmith = createGunsmith({
+    getBuild:id=>profile().builds?.[id],
+    onSave:(id,build)=>{if(!profile().builds)profile().builds={};profile().builds[id]=build;persist();},
+    onClose:()=>{activeDialog=null;},
+    notify:message=>toast(message)
+  });
   bindEvents();
   renderDashboard();
   // Existing profiles are always read first. Never wipe IndexedDB to recover from UI errors.
