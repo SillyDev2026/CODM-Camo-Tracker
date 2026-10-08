@@ -8,12 +8,16 @@
   <title>CamoVault Armory — COD Mobile Weapons & Camos</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/style.css?v=1.6.3">
-  <script type="module" src="js/app.js?v=1.6.3"></script>
-  <script type="module" src="assets/vendor/model-viewer.min.js?v=1.6.3"></script>
-  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.6.3").catch(() => {}); });</script>
+  <link rel="stylesheet" href="assets/style.css?v=1.6.4">
+  <script type="module" src="js/app.js?v=1.6.4"></script>
+  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.6.4").catch(() => {}); });</script>
 </head>
 <body>
+  <section id="startupRecovery" class="startup-recovery" role="alert" hidden>
+    <strong>Weapons couldn't finish loading</strong>
+    <p id="startupReason">The website files may be outdated or temporarily unavailable. Your saved camos have not been deleted.</p>
+    <button id="recoverSite" type="button">Reload latest website files</button>
+  </section>
   <div id="app" class="app-shell">
     <div id="mobileShade" class="mobile-shade" hidden></div>
     <aside id="sidebar" class="sidebar" aria-label="Main navigation">
@@ -25,7 +29,7 @@
       <div class="side-bottom">
         <div class="side-note"><span class="side-note-dot"></span> LOCAL SAVE ACTIVE <small>Your progress stays on this device until you choose to back it up.</small></div>
         <button class="side-link" type="button" data-action="open-settings"><span class="side-ico">⚙</span><span>Settings & backup</span></button>
-        <div class="side-version">CAMOVAULT ARMORY v1.6.3 · UNOFFICIAL FAN TOOL</div>
+        <div class="side-version">CAMOVAULT ARMORY v1.6.4 · UNOFFICIAL FAN TOOL</div>
       </div>
     </aside>
     <main class="main-content" id="main">
@@ -35,11 +39,11 @@
       </header>
       <div class="content-pad">
         <section class="hello-line"><div><div class="eyebrow"><span class="eyebrow-bar"></span> COD MOBILE · WEAPONS ONLY</div><h1 id="pageTitle">Your weapon armory<span class="period">.</span></h1><p id="pageSubtitle" class="page-subtitle">Track weapon camos, Diamond challenges, and levels. Everything saves automatically.</p></div><div id="dateBadge" class="date-badge"></div></section>
-        <nav class="mode-tabs" aria-label="Camo type"><button type="button" class="mode-tab active" data-mode="mp">✦ Multiplayer <small>Gold · Diamond</small></button><button type="button" class="mode-tab" data-mode="zombies">✧ Zombies <small>Aether Crystal</small></button></nav><section class="season-hub" aria-label="COD Mobile season tracker"><div class="season-hub-heading"><div><div class="season-hub-label">SEASON COMMAND</div><h2 id="seasonTitle">Checking season roster…</h2><p id="seasonSubtitle">Season updates do not reset your previous weapon progress.</p></div><div class="season-hub-actions"><button class="season-button" type="button" data-action="season-refresh" id="seasonRefresh">↻ Check updates</button><button class="season-button secondary" type="button" data-action="season-new">New weapons</button></div></div><div id="seasonTimeline" class="season-timeline" aria-live="polite"></div><div id="seasonHealth" class="season-health" role="status"></div></section><aside class="season-banner" id="seasonBanner" hidden></aside><section class="stats-grid" id="statsGrid" aria-label="Camo progression statistics"></section>
-        <section class="focus-strip" aria-label="Your next camo goal"><div class="focus-icon" aria-hidden="true">◎</div><div class="focus-info"><div class="focus-eyebrow">PICK UP WHERE YOU LEFT OFF</div><strong id="focusTitle">Choose your next weapon</strong><span id="focusSubtitle">Your recent weapon will appear here.</span></div><div class="focus-progress"><strong id="focusPercent">0%</strong><div class="progress-track"><div class="progress-fill" id="focusTrack"></div></div></div><button id="focusResume" type="button" data-action="resume" class="focus-resume">Continue ↗</button></section><section class="armory-quick" aria-label="Weapon category selection"><div class="armory-quick-head"><div><span class="eyebrow tiny">BROWSE BY WEAPON CLASS</span><h2>Choose a category</h2></div><span class="armory-only">WEAPONS · NO EQUIPMENT OR STREAKS</span></div><nav id="categoryChips" class="category-chips" aria-label="Quick weapon class filters"></nav></section>
-        <section id="weaponSection" class="weapon-section"><div class="section-head weapons-head"><div><div class="eyebrow tiny">YOUR WEAPON COLLECTION</div><h2 id="weaponsTitle">All weapons <span id="weaponCount"></span></h2></div><button class="text-link" type="button" data-action="export">↧ Export save</button></div>
+        <nav class="mode-tabs" aria-label="Camo type"><button type="button" class="mode-tab active" data-mode="mp">✦ Multiplayer <small>Gold · Diamond</small></button><button type="button" class="mode-tab" data-mode="zombies">✧ Zombies <small>Aether Crystal</small></button></nav><section class="season-hub" aria-label="COD Mobile season tracker"><div class="season-hub-heading"><div><div class="season-hub-label">SEASON COMMAND</div><h2 id="seasonTitle">Season schedule</h2><p id="seasonSubtitle">Season updates do not reset your previous weapon progress.</p></div><div class="season-hub-actions"><button class="season-button" type="button" data-action="season-refresh" id="seasonRefresh">↻ Check updates</button><button class="season-button secondary" type="button" data-action="season-new">New weapons</button></div></div><div id="seasonTimeline" class="season-timeline" aria-live="polite"></div><div id="seasonHealth" class="season-health" role="status"></div></section><aside class="season-banner" id="seasonBanner" hidden></aside><section class="stats-grid" id="statsGrid" aria-label="Camo progression statistics"><p class="loading-placeholder">Loading camo progress…</p></section>
+        <section class="focus-strip" aria-label="Your next camo goal"><div class="focus-icon" aria-hidden="true">◎</div><div class="focus-info"><div class="focus-eyebrow">PICK UP WHERE YOU LEFT OFF</div><strong id="focusTitle">Choose your next weapon</strong><span id="focusSubtitle">Your recent weapon will appear here.</span></div><div class="focus-progress"><strong id="focusPercent">0%</strong><div class="progress-track"><div class="progress-fill" id="focusTrack"></div></div></div><button id="focusResume" type="button" data-action="resume" class="focus-resume">Continue ↗</button></section><section class="armory-quick" aria-label="Weapon category selection"><div class="armory-quick-head"><div><span class="eyebrow tiny">BROWSE BY WEAPON CLASS</span><h2>Choose a category</h2></div><span class="armory-only">WEAPONS · NO EQUIPMENT OR STREAKS</span></div><nav id="categoryChips" class="category-chips" aria-label="Quick weapon class filters"><span class="loading-placeholder">Loading categories…</span></nav></section>
+        <section id="weaponSection" class="weapon-section"><div class="section-head weapons-head"><div><div class="eyebrow tiny">YOUR WEAPON COLLECTION</div><h2 id="weaponsTitle">All weapons <span id="weaponCount">…</span></h2></div><button class="text-link" type="button" data-action="export">↧ Export save</button></div>
           <div class="toolbar"><label class="search-box"><span>⌕</span><input id="weaponSearch" type="search" placeholder="Search any weapon..." autocomplete="off" aria-label="Search weapons"><kbd>/</kbd></label><div class="filters" aria-label="Filter weapons"><button class="filter active" type="button" data-filter="all">All</button><button class="filter" type="button" data-filter="inprogress">In progress</button><button class="filter" id="completedFilter" type="button" data-filter="gold">Gold ✓</button><button class="filter" type="button" data-filter="unstarted">Not started</button><button class="filter" type="button" data-filter="season">New season</button><button class="filter" type="button" data-filter="recent">Recent</button><button class="filter" type="button" data-filter="favorites">★ Saved</button></div><label class="sort-select"><span>Sort</span><select id="sortBy"><option value="default">Default</option><option value="az">Name A–Z</option><option value="progress">Most progress</option><option value="recent">Recently updated</option><option value="level">Highest level</option><option value="newest">Newest weapon</option></select></label></div>
-          <div id="weaponGrid" class="weapon-grid"></div><div id="emptyState" class="empty-state" hidden><span>⌕</span><h3>No weapons found</h3><p>Try a different search or progress filter.</p><button type="button" class="btn-soft" data-action="clear-filters">Clear filters</button></div>
+          <div id="weaponGrid" class="weapon-grid"><p class="loading-placeholder">Loading weapon list…</p></div><div id="emptyState" class="empty-state" hidden><span>⌕</span><h3>No weapons found</h3><p>Try a different search or progress filter.</p><button type="button" class="btn-soft" data-action="clear-filters">Clear filters</button></div>
         </section>
         <footer class="footer"><span>CAMOVAULT © 2026 · NOT AFFILIATED WITH ACTIVISION OR CALL OF DUTY.</span><span>WEAPONS ONLY · CAMOS ALWAYS</span></footer>
       </div>
@@ -104,5 +108,48 @@
     </div>
   </section>
   <div id="toast" role="status" aria-live="polite"></div>
+  <script>
+    // A plain browser script catches failures BEFORE optional ES modules can run.
+    // Never clear IndexedDB or localStorage during recovery.
+    (() => {
+      let moduleError = '';
+      window.addEventListener('error', event => {
+        if (event && (event.filename || event.message)) moduleError = String(event.message || 'A script failed to load').slice(0, 180);
+      }, true);
+      window.addEventListener('unhandledrejection', event => {
+        moduleError = String(event.reason?.message || event.reason || 'A module failed to load').slice(0, 180);
+      });
+      setTimeout(() => {
+        if (document.documentElement.dataset.cvReady === 'true' &&
+            document.querySelector('#categoryChips button') &&
+            document.querySelector('#weaponGrid [data-weapon]')) return;
+        const notice = document.getElementById('startupRecovery');
+        if (!notice) return;
+        notice.hidden = false;
+        const detail = document.getElementById('startupReason');
+        const reason = document.documentElement.dataset.cvBootError || moduleError;
+        if (reason) detail.textContent = 'Load error: ' + reason + '. Your saved data has not been cleared.';
+      }, 10000);
+      document.getElementById('recoverSite').addEventListener('click', async () => {
+        const button = document.getElementById('recoverSite');
+        button.disabled = true;
+        button.textContent = 'Refreshing site files…';
+        try {
+          const scope = new URL('./', location.href).href;
+          if ('serviceWorker' in navigator) {
+            for (const registration of await navigator.serviceWorker.getRegistrations()) {
+              if (registration.scope.startsWith(scope)) await registration.unregister();
+            }
+          }
+          if ('caches' in window) {
+            for (const key of await caches.keys()) {
+              if (key.startsWith('camovault-assets-')) await caches.delete(key);
+            }
+          }
+        } catch (error) { console.warn('Cache recovery could not complete', error); }
+        location.replace(location.pathname + '?site-reload=' + Date.now());
+      });
+    })();
+  </script>
 </body>
 </html>
