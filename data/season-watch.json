@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "baseline": "https://www.callofduty.com/blog/2026/10/call-of-duty-mobile-season-9-vampires-werewolves",
+  "instructions": "Set baseline to the newest reviewed official season article after merging approved weapon(s) into data/seasonal-weapons.json. The Action opens review issues; it never blindly adds weapons."
+}

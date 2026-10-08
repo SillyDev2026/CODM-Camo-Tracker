@@ -1,0 +1,34 @@
+name: Watch official CODM seasons
+on:
+  schedule:
+    - cron: '17 13 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check-season:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check official COD Mobile announcements
+        run: python scripts/season_watch.py
+      - name: Create unique review issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const links = JSON.parse(fs.readFileSync('season-candidates.json', 'utf8'));
+            const {owner, repo} = context.repo;
+            const existing = await github.paginate(github.rest.issues.listForRepo, {owner, repo, state:'all', per_page:100});
+            for(const url of links) {
+              if(existing.some(i => i.body?.includes(url))) continue;
+              await github.rest.issues.create({
+                owner, repo,
+                title:'Review new CODM season weapons',
+                body:'Official announcement: '+url+'\n\nReview the weapons, categories, release dates, and source; then update `data/seasonal-weapons.json` through a pull request. **No weapons will be added automatically until verified.**'
+              });
+            }
