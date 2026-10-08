@@ -1,25 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WEAPONS } from '../js/catalog.js';
-import { attachmentChoices, attachmentCoverage, COVERED_WEAPON_IDS } from '../js/attachments.js';
+import { attachmentChoices, attachmentCoverage, COVERED_WEAPON_IDS, isListedAttachment } from '../js/attachments.js';
 import { exportBuildCode, importBuildCode } from '../js/build-share.js';
 import { assignAttachment, defaultBuild, sanitizeBuild, updateBuildDetail, slotsFor } from '../js/loadouts.js';
 import { cleanState, freshState } from '../js/storage.js';
 
-test('every firearm has dropdown candidates or custom fallback and source provenance',()=>{
+test('every firearm uses only its own weapon-specific attachment choices',()=>{
  const weapons=WEAPONS.filter(w=>slotsFor(w.category).length>0);
  assert.ok(weapons.length>100);
  for(const w of weapons){
   for(const slot of slotsFor(w.category)){
    const info=attachmentChoices(w.id,slot);
    assert.ok(Array.isArray(info.choices));
-   assert.match(info.source,/^https:\/\//);
+   if(info.specific)assert.match(info.source,/^https:\/\//);
+   else {assert.equal(info.source,null);assert.deepEqual(info.choices,[]);}
    assert.equal(new Set(info.choices).size,info.choices.length);
   }
  }
 });
 test('researched lists are weapon-specific and never imply full coverage',()=>{
- assert.ok(COVERED_WEAPON_IDS.length>=12);
+ assert.ok(COVERED_WEAPON_IDS.length>=24);
  const qq9=attachmentChoices('smg:qq9','ammunition');
  assert.equal(qq9.verifiedSlot,true);
  assert.ok(qq9.choices.includes('10mm 30 Round Reload'));
@@ -28,10 +29,19 @@ test('researched lists are weapon-specific and never imply full coverage',()=>{
  assert.ok(cordite.choices.includes('80 Round Extended Mag'));
  assert.equal(attachmentChoices('smg:static-hv','barrel').choices.includes('Supe-SIL Suppressed Barrel'),true);
  assert.equal(attachmentChoices('smg:rus-79u','ammunition').specific,false);
+ assert.deepEqual(attachmentChoices('smg:rus-79u','ammunition').choices,[]);
+ assert.deepEqual(attachmentChoices('smg:rus-79u','optic').choices,[]);
  assert.equal(attachmentCoverage('smg:qq9').verified,true);
  assert.equal(attachmentCoverage('smg:static-hv').verified,true);
  assert.equal(attachmentCoverage('smg:rus-79u').verified,false);
  assert.equal(qq9.complete,false);
+ assert.equal(isListedAttachment('smg:qq9','ammunition','10mm 30 Round Reload'),true);
+ assert.equal(isListedAttachment('smg:fennec','ammunition','10mm 30 Round Reload'),false);
+ assert.equal(isListedAttachment('smg:fennec','ammunition','Extended Mag A'),true);
+ assert.equal(attachmentChoices('smg:fennec','ammunition').choices.includes('80 Round Extended Mag'),false);
+ assert.equal(attachmentChoices('smg:uss-9','barrel').choices.includes('13.1" First Responder'),true);
+ assert.equal(attachmentChoices('marksman:type-63','ammunition').choices.includes('GRU Mag Clamp'),true);
+ assert.equal(attachmentChoices('ar:bp50','muzzle').choices.includes('Maxim Silencer'),true);
 });
 test('CamoVault share code round trips five attachments and stats only',()=>{
  let p=defaultBuild();
@@ -73,4 +83,26 @@ test('existing custom attachment names and legacy presets survive upgrades',()=>
  const copy=sanitizeBuild(JSON.parse(JSON.stringify(p)),'smg');
  assert.equal(copy.presets[0].slots.barrel,'Some new seasonal barrel');
  assert.equal(sanitizeBuild({presets:[{slots:{optic:'Red Dot Sight'}}]},'smg').presets[0].slots.optic,'Red Dot Sight');
+});
+
+test('dropdowns never inherit unrelated weapon choices from the same class',()=>{
+ const examples=[
+  ['smg:qq9','smg:fennec','ammunition','10mm 30 Round Reload'],
+  ['smg:cordite','smg:uss-9','ammunition','80 Round Extended Mag'],
+  ['marksman:type-63','marksman:sks','ammunition','GRU Mag Clamp'],
+  ['ar:bp50','ar:m4','barrel','LEROY 438mm Rapid'],
+  ['lmg:raal-mg','lmg:mg42','muzzle','RAAL Monocore']
+ ];
+ for(const [source,other,slot,value] of examples){
+  assert.ok(attachmentChoices(source,slot).choices.includes(value));
+  assert.ok(!attachmentChoices(other,slot).choices.includes(value));
+ }
+ assert.equal(attachmentCoverage('smg:rus-79u').source,null);
+});
+test('partial weapon-specific catalog never deletes older user-entered names',()=>{
+ let p=assignAttachment(defaultBuild(),'smg','ammunition','Uncatalogued CODM Mag');
+ p=assignAttachment(p,'smg','muzzle','Custom Muzzle');
+ const restored=sanitizeBuild(JSON.parse(JSON.stringify(p)),'smg');
+ assert.equal(restored.presets[0].slots.ammunition,'Uncatalogued CODM Mag');
+ assert.equal(restored.presets[0].slots.muzzle,'Custom Muzzle');
 });
