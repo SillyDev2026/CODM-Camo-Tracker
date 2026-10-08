@@ -112,3 +112,9 @@ The new share-code panel records the **Multiplayer** or **Battle Royale** mode f
 ## v1.6.2 — reliability release
 
 The final Gunsmith patch stops text-field blur from re-rendering and destroying the preset button being clicked. Battle Royale/Multiplayer code mode now remains attached to the correct preset across swaps and reloads. Updated queries and the `camovault-assets-v1.6.2` service-worker cache prevent older Gunsmith scripts from being reused on refresh. The researched attachment examples include the new Static HV entry; no native CODM code is fabricated.
+
+## v1.6.3 — Strict per-weapon Gunsmith attachments
+
+The gunsmith attachment dropdowns no longer reuse generic category suggestions. Every named option is indexed by **exact weapon ID** and attachment slot in `js/attachments.js`, and has a weapon-specific community reference. Currently **24 guns** have researched example attachments. These are illustrative documented choices, **not complete current attachment inventories**. Guns without researched data display only **Empty slot** and **Custom / unlisted** for each available firearm slot; the UI never guesses names from another weapon. Unsupported/unverified slots on researched guns also show only Empty/Custom.
+
+The **Custom** option is always available and is intentionally not claimed as verified. Previous custom/manual saved attachments, three build presets, CODM share codes, CamoVault CV1 sharing, Zombies/Multiplayer progress, local IndexedDB backups and optional GitHub backups remain compatible. The site checks the selected weapon's attachment whitelist before accepting a named dropdown selection. The catalog can be expanded incrementally with cited per-weapon entries as official gunsmith data or reliable loadout references appear.

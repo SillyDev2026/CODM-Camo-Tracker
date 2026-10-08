@@ -8,10 +8,10 @@
   <title>CamoVault Armory — COD Mobile Weapons & Camos</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/style.css?v=1.6.2">
-  <script type="module" src="js/app.js?v=1.6.2"></script>
-  <script type="module" src="assets/vendor/model-viewer.min.js?v=1.6.2"></script>
-  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.6.2").catch(() => {}); });</script>
+  <link rel="stylesheet" href="assets/style.css?v=1.6.3">
+  <script type="module" src="js/app.js?v=1.6.3"></script>
+  <script type="module" src="assets/vendor/model-viewer.min.js?v=1.6.3"></script>
+  <script>window.addEventListener("load", () => { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js?v=1.6.3").catch(() => {}); });</script>
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -25,7 +25,7 @@
       <div class="side-bottom">
         <div class="side-note"><span class="side-note-dot"></span> LOCAL SAVE ACTIVE <small>Your progress stays on this device until you choose to back it up.</small></div>
         <button class="side-link" type="button" data-action="open-settings"><span class="side-ico">⚙</span><span>Settings & backup</span></button>
-        <div class="side-version">CAMOVAULT ARMORY v1.6.2 · UNOFFICIAL FAN TOOL</div>
+        <div class="side-version">CAMOVAULT ARMORY v1.6.3 · UNOFFICIAL FAN TOOL</div>
       </div>
     </aside>
     <main class="main-content" id="main">
@@ -62,7 +62,7 @@
         <label class="gs-title-input">Build name<input id="gunsmithBuildName" type="text" maxlength="32" placeholder="My loadout"></label>
         <div class="gs-section-head gs-attachment-head"><strong>ATTACHMENTS</strong><small id="gunsmithCapacity">0 / 5 ATTACHMENTS</small></div>
         <div class="gs-source-row"><span id="gunsmithCoverage" class="gs-coverage" role="status">CHECKING ATTACHMENT SOURCES</span><a id="gunsmithSource" href="https://blog.activision.com/call-of-duty/2020-08/Call-of-Duty-Mobile-Gunsmith" target="_blank" rel="noopener noreferrer">Source ↗</a></div>
-        <p class="gs-hint">Choose a researched attachment or a common suggestion. For an option missing from the list, select <strong>Custom</strong> and enter exactly what CODM shows for this weapon.</p>
+        <p class="gs-hint">Dropdowns show <strong>only researched choices for the selected weapon</strong>. For missing attachments, choose <strong>Custom</strong> and enter the exact in-game name. Uncatalogued guns will not show guessed options.</p>
         <div id="gunsmithSlots" class="gs-slots"></div>
         <label class="gs-title-input">Build notes<textarea id="gunsmithNotes" maxlength="500" rows="3" placeholder="ADS speed, recoil, playstyle, favorite setup…"></textarea></label>
         <div class="gs-actions"><button type="button" data-gs-copy="true" class="gs-primary">Copy attachment list</button><button type="button" data-gs-clear="true" class="gs-muted">Clear attachments</button></div>
