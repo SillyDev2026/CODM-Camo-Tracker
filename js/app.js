@@ -1,8 +1,8 @@
-import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.4.0';
-import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.4.0';
-import { readCloudProfile, writeCloudProfile } from './github.js?v=1.4.0';
-import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.4.0';
-import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.4.0';
+import { GROUPS, WEAPONS, BY_ID, GROUP_BY_ID, BASIC_CAMOS, COMPLETIONIST, STARTER_GOLD, goldTotal, completedCount, progressFor, weaponCompletion, loadSeasonalWeapons, AETHER_KILLS, AETHER_MATCHES } from './catalog.js?v=1.4.1';
+import { loadState, saveState, cleanState, cleanProfile, createProfile } from './storage.js?v=1.4.1';
+import { readCloudProfile, writeCloudProfile } from './github.js?v=1.4.1';
+import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.4.1';
+import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.4.1';
 
 const $ = id => document.getElementById(id);
 const symbols = { smg: '⌁', ar: '╱', lmg: '≡', sniper: '⌖', marksman: '⊹', shotgun: '⋈', pistol: '⟐', melee: '╳', launcher: '✳' };
@@ -46,21 +46,23 @@ function setSaveBadge(text, hasError = false) {
   const node = $('saveStatus'); node.innerHTML = `<span class="live-dot"></span> ${safe(text)}`;
   node.classList.toggle('error', hasError);
 }
-function persist() {
+function persist(debounce = false) {
   setSaveBadge('Saving…');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
+  const write = async () => {
     try { const provider = await saveState(state); setSaveBadge(provider === 'indexeddb' ? 'Saved locally' : 'Saved (fallback)'); }
     catch { setSaveBadge('Save failed — export now', true); toast('Saving failed. Export a backup immediately.', 5200); }
-  }, 190);
+  };
+  if (debounce) saveTimer = setTimeout(write, 350);
+  else void write();
 }
-function mutate(id, apply, repaintDrawer = false) {
+function mutate(id, apply, repaintDrawer = false, debounce = false) {
   if (!BY_ID.has(id)) return;
   const draft = { ...entry(id), base: { ...(entry(id).base || {}) }, zombies: { ...(entry(id).zombies || {}) } };
   apply(draft);
   draft.updatedAt = Date.now();
   profile().progress[id] = draft;
-  persist(); renderDashboard();
+  persist(debounce); renderDashboard();
   if (repaintDrawer && selectedId === id) renderDrawer();
 }
 function renderNavigation() {
@@ -155,6 +157,7 @@ function renderWeaponGrid() {
   $('emptyState').hidden = visible.length > 0;
   $('emptyState').querySelector('p').textContent=currentMode==='zombies'&&activeCategory&&!aetherEligible({category:activeCategory})?'No verified Aether Crystal challenge for this class.' :currentFilter==='season'?'No new released weapons in this category yet. New releases appear after review.':'Try a different search or camo filter.';
   document.querySelectorAll('[data-filter]').forEach(button => button.classList.toggle('active', button.dataset.filter === currentFilter));
+  decorateWeaponCards(currentMode, progress());
 }
 function renderDashboard() {
   $('profileName').textContent = profile().name;
@@ -164,7 +167,6 @@ function renderDashboard() {
   renderNavigation(); renderSeasonBanner(); renderStats(); renderWeaponGrid();
   seasonView(seasonStatus, seasonOffline, seasonLoading);
   focusView(WEAPONS, progress(), currentMode);
-  decorateWeaponCards(currentMode, progress());
 }
 function go(view, category = null) {
   currentView = view === 'category' && GROUP_BY_ID.has(category) ? 'category' : 'weapons';
@@ -394,7 +396,7 @@ function bindEvents() {
     }, true);
   });
   $('drawerInner').addEventListener('input', event => {
-    if (event.target.id === 'weaponNotes' && selectedId) mutate(selectedId, e => { e.notes = event.target.value.slice(0, 800); });
+    if (event.target.id === 'weaponNotes' && selectedId) mutate(selectedId, e => { e.notes = event.target.value.slice(0, 800); }, false, true);
   });
   $('weaponSearch').addEventListener('input', renderWeaponGrid);
   $('sortBy').addEventListener('change', renderWeaponGrid);
