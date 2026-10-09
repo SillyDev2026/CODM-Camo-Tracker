@@ -70,8 +70,8 @@ export function cleanProgress(progress) {
       notes: typeof raw.notes === 'string' ? raw.notes.slice(0, 800) : '',
       zombies: {
         aetherCrystal: raw.zombies?.aetherCrystal === true,
-        matches: Math.min(100000, Math.max(0, Math.floor(Number(raw.zombies?.matches) || 0))),
-        target: Math.min(100000, Math.max(1, Math.floor(Number(raw.zombies?.target) || 6))),
+        matches: Math.min(6, Math.max(0, Math.floor(Number(raw.zombies?.matches) || 0))),
+        target: 6,
         killsPerMatch: Math.min(100000, Math.max(0, Math.floor(Number(raw.zombies?.killsPerMatch) || 0)))
       },
       updatedAt: Number.isFinite(raw.updatedAt) ? raw.updatedAt : Date.now()
