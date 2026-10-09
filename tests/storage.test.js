@@ -53,3 +53,19 @@ test('corrupted fallback JSON does not get erased during startup', async () => {
   await assert.rejects(loadState(),/cannot be read/);
   assert.equal(globalThis.localStorage.getItem('camovault-state-v1'),'{not json');
 });
+
+test('Aether qualifying progress stays at six wins and legacy targets cannot override it', () => {
+  const input = {
+    'ar:ak-47': { zombies: { matches: 27, target: 27, killsPerMatch: 25, aetherCrystal: true } },
+    'smg:qq9': { zombies: { matches: -4, target: 1 } },
+    'sniper:dl-q33': { zombies: { matches: 5, target: 12 } }
+  };
+  const clean = cleanState(aSave('Zombies', Date.now(), input)).profiles[0].progress;
+  assert.equal(clean['ar:ak-47'].zombies.matches, 6);
+  assert.equal(clean['ar:ak-47'].zombies.target, 6);
+  assert.equal(clean['ar:ak-47'].zombies.aetherCrystal, true);
+  assert.equal(clean['smg:qq9'].zombies.matches, 0);
+  assert.equal(clean['sniper:dl-q33'].zombies.matches, 5);
+  assert.equal(clean['sniper:dl-q33'].zombies.target, 6);
+  assert.equal(clean['ar:ak-47'].zombies.killsPerMatch, 25);
+});
