@@ -1,5 +1,5 @@
 // Caches only this site's public files. No data, credentials, or GitHub API calls are cached.
-const CACHE = 'camovault-assets-v1.7.1';
+const CACHE = 'camovault-assets-v1.7.2';
 // Don't download 3 MB of optional 3D meshes as a prerequisite for activating
 // a new version of the camo tracker. A single missing asset must not block SW.
 const CORE = ['./', './index.html', './assets/style.css', './js/app.js', './js/catalog.js',
