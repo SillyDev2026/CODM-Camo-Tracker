@@ -48,7 +48,7 @@ A Gold checkbox marks all six basic camo families as completed in the local chec
 
 ## Zombies & future seasons
 
-The Zombies tab tracks Aether Crystal separately from Multiplayer camos. Each eligible weapon has a manually confirmed checkbox, qualifying completed Undead Siege wins (default six), and editable kills-per-match. Reference requirements: AR/SMG/LMG 25, pistols 15, shotguns 12, sniper/marksman 8 zombie kills in completed Hard/Nightmare games. Requirements should be checked in-game. Melee and launcher eligibility is unverified, so no Aether target is assigned. The same local storage and GitHub JSON backups retain both modes.
+The Zombies tab tracks Aether Crystal separately from Multiplayer camos. Each eligible weapon has a fixed **0/6 qualifying Hardcore/Nightmare wins** counter with +/− buttons and an optional manual in-game unlock confirmation. Wins must include the weapon-specific zombie kills in each completed match; target and kill rules are now guidance instead of editable counters. Old progress and JSON backups remain compatible (legacy wins above six are clamped to six). Reference requirements: AR/SMG/LMG 25, pistols 15, shotguns 12, sniper/marksman 8 zombie kills in completed Hard/Nightmare games. Requirements should be checked in-game. Melee and launcher eligibility is unverified, so no Aether target is assigned. The same local storage and GitHub JSON backups retain both modes.
 
 The site loads `data/seasonal-weapons.json` with a network-first policy and offline cache. Weapons become visible automatically when a **reviewed official announcement** entry reaches its releaseAt timestamp; IDs and previously saved progress are preserved. Grav (AR) is configured for October 14, 2026 at 5 PM Pacific, according to https://www.callofduty.com/blog/2026/10/call-of-duty-mobile-season-9-vampires-werewolves. Future seasons need reviewed manifest entries. New-release monitoring can create issues for review rather than adding unverified gear.
 
@@ -146,3 +146,11 @@ The website **does not invent compatibility or weapon stats**. Researched attach
 Added researched, source-linked attachment examples for RUS-79U, AK117, DR-H, MAC-10, GKS, and KRM-262, as well as the Rytec AMR catalog. **31 named firearm catalogs** now offer reviewed community examples (sometimes only a recommended five-part loadout, not an exhaustive inventory). Six guns also offer optional **Apply researched loadout** starters: RUS-79U, AK117, DR-H, MAC-10, GKS, KRM-262. Each starter explicitly requires user confirmation, replaces only the currently selected preset's attachments and name, and does not change camo progress, notes, native CODM code or other presets.
 
 An attachment saved manually in the profile's personal per-gun library can now be selected from the dropdown in all three presets of that same weapon. The app checks the researched list OR the current player's matching saved catalog, **never** a category-wide attachment pool. It also renders the source-based starter buttons responsively on phones. Extra tests check representative firearms, attachment isolation, five-part curated presets, backups, the 3D viewer, and the startup recovery mechanism. The website remains unofficial and does **not** fetch unlock data or current Gunsmith parts from Activision.
+
+## v1.7.2 — Zombies Hardcore six-win correction
+
+- Each eligible gun tracks **0–6 completed Hard or Nightmare Undead Siege wins**; the goal is no longer editable.
+- Use +/− controls or direct numeric entry. The counter cannot exceed six and shows ready-to-verify at 6/6.
+- Per-class zombie kill thresholds are displayed as explanatory rules, not editable targets.
+- Old profiles, local saves and cloud backups migrate by preserving valid progress and capping obsolete counters at six.
+- Aether Crystal remains manually confirmed in-game; Multiplayer/Gold/Diamond progress is unaffected.
