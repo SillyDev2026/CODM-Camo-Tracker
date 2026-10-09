@@ -16,8 +16,8 @@ export function focusView(weapons,progress,mode){
  eligible.sort((a,b)=>(progress[b.id]?.updatedAt||0)-(progress[a.id]?.updatedAt||0));
  const w=eligible[0];if(!w)return;
  const entry=progress[w.id]||{},z=entry.zombies||{};
- const count=mode==='zombies'?Number(z.matches)||0:['Sand','Dragon','Splinter','Tiger','Jungle','Reptile'].filter(k=>entry.gold||entry.base?.[k]).length+['gold','platinum','damascus','diamond'].filter(k=>entry[k]).length;
- const goal=mode==='zombies'?Number(z.target)||6:10;
+ const count=mode==='zombies'?Math.min(6,Math.max(0,Number(z.matches)||0)):['Sand','Dragon','Splinter','Tiger','Jungle','Reptile'].filter(k=>entry.gold||entry.base?.[k]).length+['gold','platinum','damascus','diamond'].filter(k=>entry[k]).length;
+ const goal=mode==='zombies'?6:10;
  const pct=Math.round(Math.min(100,Math.max(0,count/goal*100)));
  el('focusTitle').textContent=w.name;
  el('focusSubtitle').textContent=mode==='zombies'?(z.aetherCrystal?'Aether Crystal unlocked':'Aether Crystal · '+count+'/'+goal+' qualified matches'):(entry.gold?'Gold achieved · ':'Camo grind · ')+count+'/10 milestones';
