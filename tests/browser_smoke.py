@@ -171,6 +171,16 @@ def main():
             page.wait_for_timeout(180)
             page.locator('[data-mode="zombies"]').last.click()
             page.locator('[data-weapon="smg:qq9"]').click()
+            assert page.locator('input[data-zombie-number="matches"]').get_attribute("max") == "6", "Zombies target must be exactly six"
+            assert page.locator('input[data-zombie-number="target"]').count() == 0, "Editable match targets should not be displayed"
+            assert page.locator('input[data-zombie-number="killsPerMatch"]').count() == 0, "Editable kill targets should not be displayed"
+            page.locator('[data-action="zombie-plus"]').click()
+            assert page.locator('input[data-zombie-number="matches"]').input_value() == "1", "Increment did not record a qualifying win"
+            page.locator('[data-action="zombie-minus"]').click()
+            assert page.locator('input[data-zombie-number="matches"]').input_value() == "0", "Decrement did not undo the win"
+            page.locator('input[data-zombie-number="matches"]').fill("99")
+            page.locator('input[data-zombie-number="matches"]').dispatch_event("change")
+            assert page.locator('input[data-zombie-number="matches"]').input_value() == "6", "Zombies wins must be capped at six"
             page.locator('input[data-zombie-check="aetherCrystal"]').check()
             page.locator('input[data-zombie-number="matches"]').fill("3")
             page.locator('input[data-zombie-number="matches"]').dispatch_event("change")
