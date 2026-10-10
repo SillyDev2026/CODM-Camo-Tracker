@@ -22,16 +22,17 @@ export function cleanWeaponMastery(input){
  const history=Array.isArray(s.history)?s.history.slice(-12).filter(obj).map(h=>({
   id:typeof h.id==='string'&&/^[\w-]{1,65}$/.test(h.id)?h.id:'',
   at:Number.isFinite(h.at)&&h.at>0?h.at:0,
-  kills:bounded(h.kills,500),deaths:bounded(h.deaths,500),headshots:bounded(h.headshots,500),
+  kills:bounded(h.kills,500),deaths:bounded(h.deaths,500),headshots:Math.min(bounded(h.kills,500),bounded(h.headshots,500)),
   win:h.win===true
  })).filter(h=>h.id):[];
  return {points:bounded(s.points),kills,deaths,headshots,matches,wins,history,updatedAt:Number.isFinite(s.updatedAt)?s.updatedAt:0};
 }
 export function cleanMasteryCollection(input){
  if(!obj(input))return {};
- const valid=new Set(WEAPONS.map(w=>w.id)),out={};
+ const out={};
  for(const [id,raw] of Object.entries(input)){
-  if(valid.has(id))out[id]=cleanWeaponMastery(raw);
+  // Preserve future-season weapons even before the manifest is loaded.
+  if(/^(?:ar|smg|lmg|sniper|marksman|shotgun|pistol|melee|launcher):[a-z0-9-]{1,110}$/.test(id))out[id]=cleanWeaponMastery(raw);
  }
  return out;
 }
