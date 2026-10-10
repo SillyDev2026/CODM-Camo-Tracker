@@ -154,3 +154,16 @@ An attachment saved manually in the profile's personal per-gun library can now b
 - Per-class zombie kill thresholds are displayed as explanatory rules, not editable targets.
 - Old profiles, local saves and cloud backups migrate by preserving valid progress and capping obsolete counters at six.
 - Aether Crystal remains manually confirmed in-game; Multiplayer/Gold/Diamond progress is unaffected.
+
+## v1.7.3 — Reliability and handling fixes (October 2026)
+
+- **Gunsmith typing and tapping:** Setting or clearing a curated attachment and entering a personal attachment no longer rebuilds the currently focused form during change/blur. This avoids lost taps on the three build presets on Android. The capacity and reusable personal attachment chips refresh in place.
+- **Share codes:** The CamoVault CV1 share text is now updated immediately after changing attachment choices, stats, build name, battle-royale/multiplayer mode, or build goal. Native CODM game codes remain separate and unmodified.
+- **Cloud backup safety:** GitHub uploads capture the selected player profile at the beginning. Switching players during a remote request cannot accidentally mark a different profile as synced. Concurrent upload/download actions are rejected, and a warning appears if more local edits occurred during an upload. The GitHub API includes a 20-second timeout, clearer permission/token errors, and accurate non-success handling for failed PUT requests.
+- **Startup and navigation:** Stale asynchronous Gunsmith openings from repeated taps, dismissed drawers, or profile switching are ignored. Opening settings closes an active build first.
+- **3D performance:** The low-spec software fallback is capped near 30 FPS and skips background frames, with improved pinch tracking. If canvas rendering is unavailable, Gunsmith still opens and attachment editing continues without 3D; the fallback error no longer occurs later inside an animation frame.
+- **Input validation:** Manual weapon level and max level stay within 0–200, and clearing a custom Diamond target restores the class default. Importing a single profile respects the existing 30-profile cap.
+- **Keyboard handling:** The build dialog keeps Tab focus inside the dialog until it is closed, then returns focus to the originating control.
+- **Testing:** Extended Chromium mobile tests for immediate CV1 updates, edit-then-switch taps, level/target behavior, and canvas-unavailable devices, plus dedicated mocked GitHub cloud upload/conflict tests. Existing profile storage schema, saves, token vault and all previous camo progress are preserved.
+
+This release fixes the verified failure paths above; it is not a guarantee against every device-specific or future game-season issue. Weapon attachment lists are still community-curated and incomplete for unresearched guns.
