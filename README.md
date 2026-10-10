@@ -187,3 +187,24 @@ CamoVault now has a CODM-style **Grindable camos** view for every weapon: six fa
 ### v1.8.1 consistency patch
 
 Gold quick action, Gold completionist checkbox, and importing the six previously completed Gold SMGs all explicitly mark each weapon's 60 grindable camo stages confirmed. Gold stays a separately tracked manual status when stages are edited later. Added a browser regression check so the quick action cannot silently leave the detailed 0–60 progress behind. This patch refreshes the app and offline cache version for the final website.
+
+
+## v2.0.0 — Weapon Master, performance records and local leaderboards
+
+### Weapon Master rank tracker
+Each weapon has a new **Weapon Master** section in its weapon progress editor (Multiplayer or Zombies), based on the supplied CODM Weapon Master reference image. Record the mastery points CODM displays, with screenshot-inspired ranks: Iron 0, Gold 400, Platinum 1,000, Diamond 2,000, Master 3,500, Master I 5,000, Master II 6,500, Master III 8,000+. The rank, progress bar, points to next rank and performance summary update automatically. These thresholds are **illustrative**, not a synchronized official Activision ranking.
+
+### Weapon performance and match tracking
+Manually track points, weapon kills, deaths, headshots, matches played and wins; get live K/D, headshot percentage and win percentage. Use **Log match** to append a match with kills, deaths, headshots and Win toggle. Lifetime totals update immediately; **Undo latest** reverses the most recent retained log after confirmation. Only the newest 12 match entries are stored per weapon to avoid unbounded save growth; cumulative totals remain until manually edited. All values are sanitized and stored per player + per weapon.
+
+### Local leaderboard and "best weapon"
+The new **Weapon Master & leaderboard** panel appears before Browse by Weapon Class. It includes your Top 3 tracked weapons, filters for weapon category and leaderboard metric, a 25-row ranked table, and a scope selector for either **My weapons** or **Local player profiles stored in this browser**. Metrics include:
+- Transparent **tracking score** (personal activity index, **not** official CODM skill/MMR), described in `js/mastery.js`.
+- Manually entered **Weapon Master points**, lifetime kills, K/D (requires at least 20 kills), headshots, wins, and the number of confirmed grindable camo stages.
+- Ten automatic **tracking achievements**, e.g. Gold, Diamond, Damascus, Aether Crystal, Sharpshooter and Weapon Master.
+- **Export CSV**, escaped against common spreadsheet formula injection.
+
+All leaderboard results are computed from the saved local profile data. **No worldwide leaderboard, real CODM sign-in, live stat import, anti-cheat proof, or public score submission is implemented**. A global system requires a consent-based backend and clear self-reported/unverified labels; see [docs/leaderboards.md](docs/leaderboards.md) for the proposed Cloudflare Worker + D1 / OAuth flow. Never share GitHub access tokens publicly.
+
+### Save and compatibility
+The new `profile.mastery[weaponId]` property is optional, sanitized and included in IndexedDB, localStorage fallback, JSON imports/exports and optional user-initiated GitHub private-repository backup. Legacy profiles without mastery initialize with empty records; no Gold, Zombies, Gunsmith, profile or 60-step camo progress is reset. The seasonal weapon sanitizer preserves well-formed future weapon IDs. Mobile responsiveness, screen-size overflow and match/reload persistence are covered by Chromium tests.
