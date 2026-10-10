@@ -496,3 +496,43 @@ button{touch-action:manipulation}
 .gs-example:focus-visible{outline:2px solid #c9fb55;outline-offset:2px}
 .gs-build-examples .gs-hint{font-size:11px;line-height:1.5}
 @media(max-width:450px){.gs-example-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.gs-example{font-size:10px;padding:11px 8px}}
+
+
+/* v1.8: individual CODM grindable camouflage milestones */
+.camo-challenge-panel{min-width:0;display:grid;gap:14px}
+.camo-family-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.camo-family-tab{border:1px solid #37534a;background:#15272b;color:#c2d2ca;min-width:0;min-height:69px;border-radius:10px;padding:10px 6px;display:grid;align-content:center;justify-items:center;gap:5px;font:700 11px/1.2 system-ui;cursor:pointer}
+.camo-family-tab strong{font-size:12px;color:#bfd6c0}
+.camo-family-tab.selected{background:#293d2e;color:#dcff91;border-color:#c9fb55;box-shadow:inset 0 0 0 1px #c9fb5555}
+.camo-family-tab:focus-visible,.camo-count-bar button:focus-visible,.camo-mark-family:focus-visible{outline:2px solid #c9fb55;outline-offset:2px}
+.camo-family-icon{height:17px;width:35px;display:block;border-radius:2px;background:#987751}
+.family-sand{background:repeating-linear-gradient(135deg,#a79561 0 7px,#675b38 7px 13px,#d2b884 13px 20px)}
+.family-dragon{background:repeating-linear-gradient(45deg,#335a62 0 6px,#203f59 6px 12px,#609095 12px 19px)}
+.family-splinter{background:repeating-linear-gradient(130deg,#8493a5 0 5px,#162c3c 5px 12px,#566579 12px 18px)}
+.family-tiger{background:repeating-linear-gradient(60deg,#bd9e55 0 6px,#2c3226 6px 10px,#887947 10px 17px)}
+.family-jungle{background:repeating-linear-gradient(120deg,#67784b 0 7px,#334e31 7px 15px,#a1a06b 15px 23px)}
+.family-reptile{background:repeating-linear-gradient(135deg,#526c49 0 8px,#283d37 8px 15px,#809a5d 15px 19px)}
+.camo-challenge-detail{border:1px solid #35564c;border-radius:13px;padding:13px;background:#101f22;min-width:0}
+.camo-family-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.camo-family-heading h3{font-family:inherit;font-size:17px;font-weight:900;line-height:1.25;margin:0 0 5px;color:#e9f5e7}
+.camo-family-heading p{margin:0;color:#b4c8c2;font-size:11px}
+.camo-family-total{white-space:nowrap;border-radius:7px;background:#263d30;color:#d5ff94;border:1px solid #597a4f;padding:7px 9px;font-size:11px;font-weight:800}
+.camo-challenge-detail>.drawer-explainer{margin:11px 0;color:#a1b5b0;font-size:11px;line-height:1.5}
+.camo-count-bar{display:flex;align-items:end;gap:7px;margin:11px 0 14px;padding:12px;background:#172e30;border:1px solid #33564d;border-radius:10px}
+.camo-count-bar label{flex:1;min-width:0;color:#d0e3dc;font-size:11px;font-weight:800;line-height:1.3}
+.camo-count-bar input{margin-top:5px;width:100%;min-width:0;background:#0b1a1d;color:#e7fae7;border:1px solid #537069;border-radius:7px;padding:9px;min-height:39px;font-size:15px}
+.camo-count-bar button{border:1px solid #668153;border-radius:7px;color:#ddffad;background:#283e32;padding:8px;min-width:40px;min-height:39px;font-size:12px;font-weight:800;cursor:pointer}
+.camo-stage-list{display:grid;gap:7px}
+.camo-stage{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;background:#14272c;border:1px solid #32464a;border-radius:9px;padding:10px;min-width:0}
+.camo-stage.ready{border-color:#6c8551}
+.camo-stage.unlocked{border-color:#85aa52;background:#1d342c}
+.camo-stage-pattern{width:42px;height:42px;border-radius:6px;display:grid;place-items:center;color:#fdfcf3;font-size:14px;font-weight:900;text-shadow:0 1px 5px #000;flex-shrink:0}
+.camo-stage-main{min-width:0;display:grid;gap:5px}
+.camo-stage-main>strong{font-size:12px;color:#f0f6e6}
+.camo-stage-main>small{font-size:10px;color:#b1c2b8;line-height:1.3;overflow-wrap:anywhere}
+.camo-stage-goal{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:#b5c5bd;font-size:10px}
+.camo-stage-goal input{min-width:0;width:94px;max-width:100%;height:33px;border:1px solid #46645b;border-radius:5px;background:#0a1d20;color:#ebf2e9;padding:6px 8px;font-size:12px}
+.camo-stage-check{display:grid;justify-items:center;gap:4px;color:#c9e0cf;font-size:9px;text-align:center;cursor:pointer}
+.camo-stage-check input{width:21px;height:21px;accent-color:#c9fb55}
+.camo-mark-family{background:transparent;border:1px solid #587854;border-radius:8px;min-height:39px;padding:10px;margin-top:13px;width:100%;color:#ddf8c1;font-size:11px;font-weight:800;cursor:pointer}
+@media(max-width:520px){.camo-family-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.camo-family-tab{font-size:10px}.camo-count-bar{padding:9px}.camo-stage{grid-template-columns:35px minmax(0,1fr);gap:9px}.camo-stage-pattern{width:35px;height:40px}.camo-stage-check{grid-column:2;justify-self:start;display:flex;align-items:center;gap:8px;font-size:11px}.camo-stage-goal input{width:92px}}
