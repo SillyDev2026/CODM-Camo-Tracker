@@ -3,6 +3,7 @@ import { loadState, saveState, cleanState, cleanProfile, createProfile } from '.
 import { readCloudProfile, writeCloudProfile } from './github.js?v=1.7.3';
 import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.7.3';
 import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.7.3';
+import { CAMO_STEPS, camoObjective, camoFamilyProgress, applyCamoChange, confirmCamoFamily, totalCamoStages } from './camo-challenges.js?v=1.8.0';
 // Optional 3D/Gunsmith code is loaded only when a user opens a build.
 
 const $ = id => document.getElementById(id);
@@ -29,6 +30,7 @@ let gunsmith = null;
 let gunsmithPromise = null;
 let buildRequest = 0;
 let cloudBusy = false;
+let activeCamoFamily = 'Sand';
 
 function saveViewPreference(){try{localStorage.setItem('camovault-view-v1',JSON.stringify({mode:currentMode,category:activeCategory}));}catch{}}
 function restoreViewPreference(){try{const v=JSON.parse(localStorage.getItem('camovault-view-v1')||'null');if(v?.mode==='zombies')currentMode='zombies';if(v?.category && GROUP_BY_ID.has(v.category)){activeCategory=v.category;currentView='category';}}catch{}}
@@ -70,7 +72,7 @@ function persist(debounce = false) {
 }
 function mutate(id, apply, repaintDrawer = false, debounce = false) {
   if (!BY_ID.has(id)) return;
-  const draft = { ...entry(id), base: { ...(entry(id).base || {}) }, zombies: { ...(entry(id).zombies || {}) } };
+  const draft = { ...entry(id), base: { ...(entry(id).base || {}) }, camoChallenges: { ...(entry(id).camoChallenges || {}) }, zombies: { ...(entry(id).zombies || {}) } };
   apply(draft);
   draft.updatedAt = Date.now();
   profile().progress[id] = draft;
@@ -218,12 +220,37 @@ function renderDrawer() {
   const oldScroll = $('weaponDrawer').scrollTop;
   const weapon = BY_ID.get(selectedId), e = entry(selectedId), group = GROUP_BY_ID.get(weapon.category);
   if(currentMode==='zombies'){renderZombiesDrawer(weapon,e,group,oldScroll);return;}
-  const basicDone = BASIC_CAMOS.filter(camo => e.base?.[camo] || e.gold).length;
+  const basicDone = BASIC_CAMOS.filter(family => camoFamilyProgress(e,family).unlocked.every(Boolean)).length;
+  const challengeTotal=totalCamoStages(e);
   const target = Number(e.diamondTarget) > 0 ? Number(e.diamondTarget) : group.target;
   const label = group.targetUnit === 'matches' ? 'Qualified matches (usually 10 weapon kills each)' : group.targetUnit === 'kills' ? 'Total weapon kills' : 'Required objectives (check in-game)';
-  const bases = BASIC_CAMOS.map(camo => `<label class="camo-item ${e.base?.[camo] || e.gold ? 'complete' : ''}"><input type="checkbox" data-basic="${camo}" ${e.base?.[camo] || e.gold ? 'checked' : ''}><span class="camo-icon">◈</span><span class="textcol">${camo}</span><small>${e.base?.[camo] || e.gold ? 'COMPLETE' : 'NOT YET'}</small></label>`).join('');
+  if(!BASIC_CAMOS.includes(activeCamoFamily))activeCamoFamily='Sand';
+  const chosen=activeCamoFamily;
+  const chosenProgress=camoFamilyProgress(e,chosen);
+  const objective=camoObjective(weapon.category,chosen);
+  const familyButtons=BASIC_CAMOS.map(family=>{
+    const state=camoFamilyProgress(e,family),done=state.unlocked.filter(Boolean).length;
+    return '<button type="button" class="camo-family-tab '+(chosen===family?'selected':'')+'" data-camo-family="'+family+'" aria-pressed="'+(chosen===family)+'"><span class="camo-family-icon family-'+family.toLowerCase()+'"></span><span>'+family+'</span><strong data-family-badge="'+family+'">'+done+'/10</strong></button>';
+  }).join('');
+  const detailRows=Array.from({length:CAMO_STEPS},(_,i)=>{
+    const done=chosenProgress.unlocked[i],goal=chosenProgress.targets[i],ready=goal!==null&&chosenProgress.count>=goal;
+    return '<div class="camo-stage '+(done?'unlocked':ready?'ready':'')+'" data-camo-stage-row="'+i+'">'+
+     '<div class="camo-stage-pattern family-'+chosen.toLowerCase()+'">'+String(i+1).padStart(2,'0')+'</div>'+
+     '<div class="camo-stage-main"><strong>'+chosen+' '+String(i+1).padStart(2,'0')+'</strong>'+
+     '<small data-camo-stage-status="'+i+'">'+(done?'Confirmed unlocked':goal===null?'Enter the in-game requirement':ready?'Target reached · confirm in CODM':chosenProgress.count+' / '+goal+' '+objective.toLowerCase())+'</small>'+
+     '<label class="camo-stage-goal">Required <input type="number" inputmode="numeric" min="1" max="1000000" placeholder="e.g. 10" data-camo-target="'+chosen+'" data-camo-stage="'+i+'" value="'+(goal??'')+'" aria-label="'+chosen+' camo '+(i+1)+' required '+objective+'"></label></div>'+
+     '<label class="camo-stage-check"><input type="checkbox" data-camo-unlock="'+chosen+'" data-camo-stage="'+i+'" '+(done?'checked':'')+'><span>Unlocked</span></label>'+
+     '</div>';
+  }).join('');
+  const bases='<div class="camo-family-tabs" role="group" aria-label="Grindable camo categories">'+familyButtons+'</div>'+
+    '<div class="camo-challenge-detail"><div class="camo-family-heading"><div><h3>'+chosen+' camo challenges</h3><p>'+safe(objective)+' · '+chosenProgress.unlocked.filter(Boolean).length+' of 10 unlocked</p></div><span class="camo-family-total" data-camo-total>'+challengeTotal+'/60</span></div>'+
+    '<p class="drawer-explainer">Enter the requirement shown for each in-game camo. Targets vary by weapon and tier; example: 10 headshots. Progress is manual, and weapon level may also be required.</p>'+
+    '<div class="camo-count-bar"><label>Total '+safe(objective.toLowerCase())+'<input type="number" inputmode="numeric" min="0" max="1000000" data-camo-count="'+chosen+'" value="'+chosenProgress.count+'"></label><button type="button" data-camo-adjust="-1">−1</button><button type="button" data-camo-adjust="1">+1</button><button type="button" data-camo-adjust="10">+10</button></div>'+
+    '<div class="camo-stage-list">'+detailRows+'</div>'+
+    '<button type="button" class="camo-mark-family" data-camo-mark-all="'+chosen+'">Mark '+chosen+' all 10 as '+(chosenProgress.unlocked.every(Boolean)?'not unlocked':'unlocked')+'</button>'+
+    '</div>';
   const tiers = COMPLETIONIST.map(camo => `<label class="complete-tile ${camo} ${e[camo] ? 'complete' : ''}"><input type="checkbox" data-tier="${camo}" ${e[camo] ? 'checked' : ''}><span class="tile-icon">${tileSymbols[camo]}</span><span class="tile-title">${camo}</span><span class="tile-sub">${e[camo] ? 'UNLOCKED' : 'NOT YET UNLOCKED'}</span></label>`).join('');
-  $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Basic camo series <small>${basicDone}/6 tracked</small></div><p class="drawer-explainer">Mark each camo family after you finish its challenges. Requirements vary by weapon—check Gunsmith in-game. Gold automatically checks all six families here.</p><div class="camo-list">${bases}</div></section><section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
+  $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Grindable camos <small>${challengeTotal}/60 · ${basicDone}/6 families</small></div><div class="camo-challenge-panel">${bases}</div></section><section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
   $('weaponDrawer').scrollTop = oldScroll;
 }
 async function openBuild(id, trigger) {
@@ -268,6 +295,7 @@ async function openBuild(id, trigger) {
 function openDrawer(id) {
   if (!BY_ID.has(id)) return;
   selectedId = id;
+  activeCamoFamily='Sand';
   $('drawerBackdrop').hidden = false; $('weaponDrawer').hidden = false;
   $('weaponDrawer').scrollTop = 0;
   renderDrawer();
@@ -460,6 +488,36 @@ function handleAction(action) {
 }
 function bindEvents() {
   document.addEventListener('click', event => {
+    const familyButton=event.target.closest('[data-camo-family]');
+    if(familyButton&&selectedId&&currentMode==='mp'){
+      if(BASIC_CAMOS.includes(familyButton.dataset.camoFamily)){
+        activeCamoFamily=familyButton.dataset.camoFamily;
+        renderDrawer();
+      }
+      return;
+    }
+    const adjust=event.target.closest('[data-camo-adjust]');
+    if(adjust&&selectedId&&currentMode==='mp'){
+      const family=activeCamoFamily;
+      const amount=Number(adjust.dataset.camoAdjust);
+      if([-1,1,10].includes(amount))mutate(selectedId,e=>{
+        const before=camoFamilyProgress(e,family);
+        const updated=applyCamoChange(e,family,'count',before.count+amount);
+        e.camoChallenges=updated.camoChallenges;e.base=updated.base;
+      },true);
+      return;
+    }
+    const bulk=event.target.closest('[data-camo-mark-all]');
+    if(bulk&&selectedId&&currentMode==='mp'&&BASIC_CAMOS.includes(bulk.dataset.camoMarkAll)){
+      const family=bulk.dataset.camoMarkAll;
+      const done=camoFamilyProgress(entry(selectedId),family).unlocked.every(Boolean);
+      if(!done&&!confirm('Mark all 10 '+family+' camos unlocked for this weapon? Only do this if CODM shows them unlocked.'))return;
+      mutate(selectedId,e=>{
+        const updated=confirmCamoFamily(e,family,!done);
+        e.camoChallenges=updated.camoChallenges;e.base=updated.base;
+      },true);
+      return;
+    }
     const action = event.target.closest('[data-action]');
     if (action) { handleAction(action.dataset.action); return; }
     const quick=event.target.closest('[data-quick]');
@@ -484,10 +542,43 @@ function bindEvents() {
     const input = event.target;
     if(input.dataset.zombieCheck==='aetherCrystal'&&aetherEligible(BY_ID.get(selectedId)))mutate(selectedId,e=>{e.zombies.aetherCrystal=input.checked;},true);
     if(input.dataset.zombieNumber==='matches'&&aetherEligible(BY_ID.get(selectedId)))mutate(selectedId,e=>{e.zombies.matches=clamp(Number(input.value)||0,0,AETHER_MATCHES);},true);
-    if (input.dataset.basic) mutate(selectedId, e => { e.base[input.dataset.basic] = input.checked; }, true);
+    if(input.dataset.camoUnlock&&currentMode==='mp'){
+      const family=input.dataset.camoUnlock,stage=Number(input.dataset.camoStage);
+      if(BASIC_CAMOS.includes(family)&&Number.isInteger(stage)&&stage>=0&&stage<CAMO_STEPS){
+        mutate(selectedId,e=>{
+          const updated=applyCamoChange(e,family,'unlocked',input.checked,stage);
+          e.camoChallenges=updated.camoChallenges;e.base=updated.base;
+        },true);
+      }
+      return;
+    }
+    if(input.dataset.camoTarget&&currentMode==='mp'){
+      const family=input.dataset.camoTarget,stage=Number(input.dataset.camoStage);
+      if(BASIC_CAMOS.includes(family)&&Number.isInteger(stage)&&stage>=0&&stage<CAMO_STEPS){
+        mutate(selectedId,e=>{
+          const updated=applyCamoChange(e,family,'target',input.value,stage);
+          e.camoChallenges=updated.camoChallenges;e.base=updated.base;
+        },false);
+      }
+      return;
+    }
+    if(input.dataset.camoCount&&currentMode==='mp'){
+      const family=input.dataset.camoCount;
+      if(BASIC_CAMOS.includes(family)){
+        mutate(selectedId,e=>{
+          const updated=applyCamoChange(e,family,'count',input.value);
+          e.camoChallenges=updated.camoChallenges;e.base=updated.base;
+        },false);
+      }
+      return;
+    }
+    if (input.dataset.basic) mutate(selectedId, e => {
+      const updated=confirmCamoFamily(e,input.dataset.basic,input.checked);
+      e.camoChallenges=updated.camoChallenges;e.base=updated.base;
+    }, true);
     if (input.dataset.tier) mutate(selectedId, e => {
       e[input.dataset.tier] = input.checked;
-      if (input.dataset.tier === 'gold' && input.checked) for (const camo of BASIC_CAMOS) e.base[camo] = true;
+      if (input.dataset.tier === 'gold' && input.checked) for (const family of BASIC_CAMOS) { const detail=confirmCamoFamily(e,family,true);e.base=detail.base;e.camoChallenges=detail.camoChallenges; }
     }, true);
     if (input.dataset.number) mutate(selectedId, e => {
       const field=input.dataset.number;
