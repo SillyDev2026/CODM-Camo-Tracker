@@ -170,6 +170,26 @@ def main():
             assert "My RUS Magazine" not in pdw_ammo, "Attachment leaked to unrelated SMG"
             assert page.locator("#gunsmithSource").is_hidden(), "Unresearched weapon should not claim a source"
             page.locator("#gunsmithClose").click()
+            # Six family tabs with ten independent stages per weapon.
+            page.locator('[data-weapon="smg:pdw-57"]').click()
+            assert page.locator('[data-camo-family]').count() == 6, "Six grindable camo families missing"
+            page.locator('[data-camo-family="Jungle"]').click()
+            assert page.locator('[data-camo-stage-row]').count() == 10, "Individual camo stages missing"
+            assert "Headshots" in page.locator(".camo-family-heading").inner_text()
+            assert page.locator('[data-camo-total]').inner_text()=="0/60"
+            page.locator('[data-camo-target="Jungle"][data-camo-stage="0"]').fill("10")
+            page.locator('[data-camo-target="Jungle"][data-camo-stage="0"]').dispatch_event("change")
+            page.locator('[data-camo-count="Jungle"]').fill("9")
+            page.locator('[data-camo-count="Jungle"]').dispatch_event("change")
+            assert "9 / 10 headshots" in page.locator('[data-camo-stage-status="0"]').inner_text()
+            page.locator('[data-camo-adjust="1"]').click()
+            assert "Target reached" in page.locator('[data-camo-stage-status="0"]').inner_text()
+            page.locator('[data-camo-unlock="Jungle"][data-camo-stage="0"]').check()
+            assert page.locator('[data-family-badge="Jungle"]').inner_text()=="1/10"
+            assert page.locator('[data-camo-total]').inner_text()=="1/60"
+            page.locator('[data-camo-family="Sand"]').click()
+            assert page.locator('[data-family-badge="Jungle"]').inner_text()=="1/10", "Switching camo family lost progress"
+            page.locator('[data-action="close-drawer"]').click()
             page.locator("#weaponSearch").fill("")
             assert page.locator('[data-fav="smg:qq9"]').count() == 1
             page.locator('[data-fav="smg:qq9"]').click()
@@ -201,6 +221,14 @@ def main():
             wait_ready(page, errors)
             assert page.locator('[data-mode="zombies"].mode-tab').get_attribute("aria-pressed") == "true", "Mode preference did not persist"
             page.locator('[data-mode="mp"].mode-tab').click()
+            page.locator("#weaponSearch").fill("PDW-57")
+            page.locator('[data-weapon="smg:pdw-57"]').click()
+            page.locator('[data-camo-family="Jungle"]').click()
+            assert page.locator('[data-camo-target="Jungle"][data-camo-stage="0"]').input_value()=="10", "Headshot milestone target lost on reload"
+            assert page.locator('[data-camo-count="Jungle"]').input_value()=="10", "Headshot count lost on reload"
+            assert page.locator('[data-camo-unlock="Jungle"][data-camo-stage="0"]').is_checked(), "Camo stage unlock lost on reload"
+            page.locator('[data-action="close-drawer"]').click()
+            page.locator("#weaponSearch").fill("")
             page.locator('[data-build="smg:qq9"]').click()
             assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight", "Saved personal attachment missing after reload"
             assert "Red Dot Sight" in page.locator("#gunsmithMyParts").inner_text(), "Personal library not saved"
