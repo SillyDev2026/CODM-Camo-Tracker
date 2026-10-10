@@ -1,4 +1,4 @@
-import { WEAPONS, GROUPS } from './catalog.js';
+import { WEAPONS, GROUPS } from './catalog.js?v=2.0.0';
 import { MASTER_TIERS,masteryTier,cleanWeaponMastery,kdr,rate,weaponRanking,profileRanking,weaponAwards,trackingScore } from './mastery.js';
 const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=x=>Number(x||0).toLocaleString('en-US');

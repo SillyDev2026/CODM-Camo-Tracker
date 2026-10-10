@@ -1,6 +1,6 @@
 // CamoVault manual weapon mastery and local rankings. This does not query CODM.
 // Ranks are a screenshot-inspired reference, not official live Activision data.
-import { WEAPONS, BASIC_CAMOS } from './catalog.js';
+import { WEAPONS, BASIC_CAMOS } from './catalog.js?v=2.0.0';
 import { totalCamoStages } from './camo-challenges.js';
 export const MASTER_TIERS=Object.freeze([
  {name:'Iron',min:0,color:'#92a2a5'},
