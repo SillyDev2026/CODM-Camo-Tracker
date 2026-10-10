@@ -423,7 +423,7 @@ async function uploadCloud() {
   const {owner,repo,token}=formCloud();
   const selected=cleanProfile(profile());
   const id=selected.id;
-  const before=JSON.stringify({name:selected.name,progress:selected.progress,builds:selected.builds,attachmentLibrary:selected.attachmentLibrary});
+  const before=JSON.stringify({name:selected.name,progress:selected.progress,builds:selected.builds,attachmentLibrary:selected.attachmentLibrary,mastery:selected.mastery});
   const message=$('cloudMessage');message.textContent='Uploading to your GitHub repository…';
   try{
     const result=await writeCloudProfile(token,owner,repo,selected);
@@ -433,7 +433,7 @@ async function uploadCloud() {
       persist();
     }
     const now=target?cleanProfile(target):null;
-    const unchanged=now&&JSON.stringify({name:now.name,progress:now.progress,builds:now.builds,attachmentLibrary:now.attachmentLibrary})===before;
+    const unchanged=now&&JSON.stringify({name:now.name,progress:now.progress,builds:now.builds,attachmentLibrary:now.attachmentLibrary,mastery:now.mastery})===before;
     message.textContent=unchanged?'✓ GitHub backup saved successfully.':'✓ Uploaded. You changed local data during the upload; upload again to include the latest changes.';
     toast(unchanged?'GitHub backup complete':'Backup complete — new changes still need syncing',4600);
   }catch(error){message.textContent='Could not back up: '+error.message;}
@@ -452,7 +452,7 @@ async function downloadCloud() {
     if(normalized.id!==selected.id)throw new Error('Backup profile ID does not match the selected profile');
     const index=state.profiles.findIndex(p=>p.id===selected.id);
     if(index<0)throw new Error('That profile no longer exists locally');
-    if(!confirm('Restore "'+normalized.name+'" from GitHub? This replaces only its local progress, builds, and custom attachments.')){message.textContent='Restore canceled.';return;}
+    if(!confirm('Restore "'+normalized.name+'" from GitHub? This replaces its local progress, weapon mastery, builds, and custom attachments.')){message.textContent='Restore canceled.';return;}
     normalized.cloudSyncAt=Number(remote.savedAt)||0;
     state.profiles[index]=normalized;
     persist();renderDashboard();

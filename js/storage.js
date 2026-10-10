@@ -1,6 +1,7 @@
 import { cleanBuilds } from './loadouts.js';
 import { cleanAttachmentLibrary } from './attachment-library.js';
 import { cleanCamoChallenges } from './camo-challenges.js';
+import { cleanMasteryCollection } from './mastery.js';
 const DB_NAME = 'camovault-v1';
 const STORE = 'app';
 const KEY = 'state';
@@ -9,7 +10,7 @@ const DB_VERSION = 1;
 let databasePromise;
 
 function createProfile(name = 'Player 1') {
-  return { id: globalThis.crypto?.randomUUID?.() || `profile-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, createdAt: Date.now(), cloudSyncAt: 0, progress: {}, builds: {}, attachmentLibrary: {} };
+  return { id: globalThis.crypto?.randomUUID?.() || `profile-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, createdAt: Date.now(), cloudSyncAt: 0, progress: {}, builds: {}, attachmentLibrary: {}, mastery: {} };
 }
 export { createProfile };
 
@@ -91,7 +92,8 @@ export function cleanProfile(value, fallbackName = 'Player') {
     cloudSyncAt: Number.isFinite(value.cloudSyncAt) ? value.cloudSyncAt : 0,
     progress: cleanProgress(value.progress),
     builds: cleanBuilds(value.builds),
-    attachmentLibrary: cleanAttachmentLibrary(value.attachmentLibrary)
+    attachmentLibrary: cleanAttachmentLibrary(value.attachmentLibrary),
+    mastery: cleanMasteryCollection(value.mastery)
   };
 }
 export function cleanState(value) {
