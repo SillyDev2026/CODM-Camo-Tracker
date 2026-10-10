@@ -167,3 +167,19 @@ An attachment saved manually in the profile's personal per-gun library can now b
 - **Testing:** Extended Chromium mobile tests for immediate CV1 updates, edit-then-switch taps, level/target behavior, and canvas-unavailable devices, plus dedicated mocked GitHub cloud upload/conflict tests. Existing profile storage schema, saves, token vault and all previous camo progress are preserved.
 
 This release fixes the verified failure paths above; it is not a guarantee against every device-specific or future game-season issue. Weapon attachment lists are still community-curated and incomplete for unresearched guns.
+
+
+## v1.8.0 — 60 camo challenges per weapon (October 2026)
+
+CamoVault now has a CODM-style **Grindable camos** view for every weapon: six families (Sand, Dragon, Splinter, Tiger, Jungle, Reptile), with ten numbered camo stages per family displayed as **0–10/10** on family tabs.
+
+- Open a weapon under **Multiplayer → weapon details**, select a family, and edit each of its **ten individually confirmable camos**.
+- Record a cumulative objective counter, such as Jungle headshots, with **−1, +1, +10** or direct numeric entry.
+- Set each tier's editable cumulative **requirement target**, for example **10 headshots**, or leave it blank until the actual in-game requirement is known. Targets and weapon-level unlock requirements vary; do not assume 10 is correct for every tier.
+- See when a configured goal is reached, and separately check the camo **Unlocked** after verifying CODM confirms it. A number reaching a target does **not** automatically assert that a camo unlocked.
+- Toggle each stage, or confirm/clear all ten from one family. Family progress and overall **n/60** update independently per weapon.
+- Keep independent Gold, Platinum, Damascus, Diamond and Zombies Aether Crystal tracking, saved Gunsmith builds, attachments and encrypted GitHub token.
+
+**Weapon-class context:** For standard firearms, Sand is kills, Tiger is kills with five attachments, Jungle is headshots, and Reptile is no-attachment kills. Dragon and Splinter differ by class (e.g. SMG hip-fire and double-kill tasks, sniper crouched kills, AR longshots). Melee and launchers can have different challenges. Sources: https://www.gamespot.com/articles/call-of-duty-mobile-how-to-use-the-gunsmith/1100-6497253/ and https://www.studocu.com/row/document/harmon-school-of-seventh-day-adventists/physical-education/codm-camo-grinding-guide-gold-platinum-diamond-ver-4/151250919 .
+
+**Saved-data compatibility:** A previously completed family, or Gold on older saves, initially maps to ten completed stages until individual stages are edited. Profile progress now includes a camoChallenges field with cumulative family counts, ten editable goals, and ten explicitly confirmed booleans. The existing save schema remains compatible with IndexedDB/localStorage, JSON backup, GitHub backup, and Zombies. CamoVault does not read in-game headshot counts automatically.

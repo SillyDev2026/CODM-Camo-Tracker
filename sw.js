@@ -1,9 +1,9 @@
 // Caches only this site's public files. No data, credentials, or GitHub API calls are cached.
-const CACHE = 'camovault-assets-v1.7.3';
+const CACHE = 'camovault-assets-v1.8.0';
 // Don't download 3 MB of optional 3D meshes as a prerequisite for activating
 // a new version of the camo tracker. A single missing asset must not block SW.
 const CORE = ['./', './index.html', './assets/style.css', './js/app.js', './js/catalog.js',
-  './js/storage.js', './js/loadouts.js', './js/attachment-library.js', './js/github.js', './js/token-vault.js', './js/enhancements.js',
+  './js/storage.js', './js/camo-challenges.js', './js/loadouts.js', './js/attachment-library.js', './js/github.js', './js/token-vault.js', './js/enhancements.js',
   './data/seasonal-weapons.json', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(async cache => {
