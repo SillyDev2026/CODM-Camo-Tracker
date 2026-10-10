@@ -1,5 +1,6 @@
 import { cleanBuilds } from './loadouts.js';
 import { cleanAttachmentLibrary } from './attachment-library.js';
+import { cleanCamoChallenges } from './camo-challenges.js';
 const DB_NAME = 'camovault-v1';
 const STORE = 'app';
 const KEY = 'state';
@@ -60,7 +61,7 @@ export function cleanProgress(progress) {
     const base = {};
     for (const camo of ['Sand', 'Dragon', 'Splinter', 'Tiger', 'Jungle', 'Reptile']) base[camo] = raw.base?.[camo] === true;
     out[id] = {
-      base, gold: raw.gold === true, platinum: raw.platinum === true,
+      base, camoChallenges: cleanCamoChallenges(raw.camoChallenges), gold: raw.gold === true, platinum: raw.platinum === true,
       damascus: raw.damascus === true, diamond: raw.diamond === true,
       favorite: raw.favorite === true,
       diamondCount: Math.min(100000, Math.max(0, Math.floor(Number(raw.diamondCount) || 0))),
