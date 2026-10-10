@@ -4,6 +4,8 @@ import { readCloudProfile, writeCloudProfile } from './github.js?v=1.8.1';
 import { hasSavedToken, saveTokenVault, unlockTokenVault, forgetTokenVault } from './token-vault.js?v=1.8.1';
 import { seasonView, focusView, decorateWeaponCards } from './enhancements.js?v=1.8.1';
 import { CAMO_STEPS, camoObjective, camoFamilyProgress, applyCamoChange, confirmCamoFamily, totalCamoStages } from './camo-challenges.js?v=1.8.1';
+import { cleanWeaponMastery,masteryTier,addSession,undoSession,bounded,kdr,rate,trackingScore } from './mastery.js?v=2.0.0';
+import { masteryPanel,updateLeaderboard,rankingCsv } from './mastery-ui.js?v=2.0.0';
 // Optional 3D/Gunsmith code is loaded only when a user opens a build.
 
 const $ = id => document.getElementById(id);
@@ -50,6 +52,38 @@ async function refreshSeasonCatalog(notify=false){
 function profile() { return state.profiles.find(item => item.id === state.activeProfileId) || state.profiles[0]; }
 function progress() { return profile().progress; }
 function entry(id) { return progressFor(progress(), id); }
+function currentMastery(id){return cleanWeaponMastery(profile().mastery?.[id]);}
+function saveMastery(id,data,repaint=false){
+ if(!BY_ID.has(id))return;
+ if(!profile().mastery)profile().mastery={};
+ profile().mastery[id]=cleanWeaponMastery({...data,updatedAt:Date.now()});
+ persist();
+ updateLeaderboard(profile(),state.profiles);
+ if(repaint&&selectedId===id)renderDrawer();
+ else if(selectedId===id)refreshMasteryDisplay();
+}
+function refreshMasteryDisplay(){
+ if(!selectedId)return;
+ const record=currentMastery(selectedId),tier=masteryTier(record.points);
+ const box=$('drawerInner').querySelector('.wm-tier');
+ if(!box)return;
+ box.style.setProperty('--rank-color',tier.color);
+ const rank=$('wmRank'),points=$('wmPoints'),bar=$('wmBar'),next=$('wmNext'),metrics=$('wmMetrics');
+ if(rank)rank.textContent=tier.name;
+ if(points)points.textContent=record.points.toLocaleString()+' points';
+ if(bar)bar.style.width=tier.spanPercent+'%';
+ if(next)next.textContent=tier.nextName?tier.remaining.toLocaleString()+' points to '+tier.nextName:'Highest displayed rank';
+ if(metrics)metrics.innerHTML='<span>K/D <b>'+kdr(record).toFixed(2)+'</b></span><span>Headshot rate <b>'+rate(record.headshots,record.kills)+'%</b></span><span>Win rate <b>'+rate(record.wins,record.matches)+'%</b></span><span>Tracking score <b>'+trackingScore(record,entry(selectedId)).toLocaleString()+'</b></span>';
+}
+function exportRanking(){
+ const scope=$('lbScope').value,metric=$('lbMetric').value,category=$('lbClass').value;
+ const csv=rankingCsv(profile(),scope,metric,category,state.profiles);
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='camovault-'+scope+'-leaderboard-'+new Date().toISOString().slice(0,10)+'.csv';
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+ toast('Local ranking CSV downloaded');
+}
 function toast(message, duration = 2600) {
   const node = $('toast'); node.textContent = message;
   node.classList.add('show'); clearTimeout(toastTimer);
@@ -181,6 +215,7 @@ function renderDashboard() {
   renderNavigation(); renderSeasonBanner(); renderStats(); renderWeaponGrid();
   seasonView(seasonStatus, seasonOffline, seasonLoading);
   focusView(WEAPONS, progress(), currentMode);
+  updateLeaderboard(profile(),state.profiles);
 }
 function go(view, category = null) {
   currentView = view === 'category' && GROUP_BY_ID.has(category) ? 'category' : 'weapons';
@@ -212,7 +247,7 @@ function renderZombiesDrawer(w,e,group,oldScroll) {
       <p class="drawer-explainer">Mark unlocked only after confirming Aether Crystal in COD Mobile.</p>
     </section>`:'<section class="drawer-section"><p class="drawer-explainer">This weapon class does not use an individual six-win Aether challenge in the tracked reference rules. Some melee and launcher camos unlock through completing other weapon classes.</p></section>';
   const fields='<section class="drawer-section"><div class="drawer-section-head">Weapon level</div><div class="level-fields"><label>Current<input type="number" min="0" max="200" data-number="level" value="'+(e.level||0)+'"></label><label>Max<input type="number" min="0" max="200" data-number="maxLevel" value="'+(e.maxLevel||0)+'"></label></div></section><section class="drawer-section"><div class="drawer-section-head">Notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Zombies grind notes…">'+safe(e.notes||'')+'</textarea></section><div class="drawer-bottom-note">✓ Zombies progress is independent of Multiplayer camos.</div></div>';
-  $('drawerInner').innerHTML=start+challenge+fields;
+  $('drawerInner').innerHTML=start+challenge+masteryPanel(w,profile())+fields;
   $('weaponDrawer').scrollTop=oldScroll;
 }
 function refreshCamoIndicators(){
@@ -266,7 +301,7 @@ function renderDrawer() {
     '<button type="button" class="camo-mark-family" data-camo-mark-all="'+chosen+'">Mark '+chosen+' all 10 as '+(chosenProgress.unlocked.every(Boolean)?'not unlocked':'unlocked')+'</button>'+
     '</div>';
   const tiers = COMPLETIONIST.map(camo => `<label class="complete-tile ${camo} ${e[camo] ? 'complete' : ''}"><input type="checkbox" data-tier="${camo}" ${e[camo] ? 'checked' : ''}><span class="tile-icon">${tileSymbols[camo]}</span><span class="tile-title">${camo}</span><span class="tile-sub">${e[camo] ? 'UNLOCKED' : 'NOT YET UNLOCKED'}</span></label>`).join('');
-  $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Grindable camos <small>${challengeTotal}/60 · ${basicDone}/6 families</small></div><div class="camo-challenge-panel">${bases}</div></section><section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
+  $('drawerInner').innerHTML = `<div class="drawer-header"><div class="drawer-topline"><span class="drawer-kicker">${safe(group.name.toUpperCase())} / WEAPON DETAIL</span><button class="icon-button" type="button" data-action="close-drawer" aria-label="Close weapon editor">✕</button><button class="drawer-build-shortcut" data-action="open-build" type="button">GUNSMITH / 3D ↗</button></div><h2 class="drawer-title">${safe(weapon.name)}</h2><div class="drawer-subtitle">TRACK YOUR CAMO PROGRESS & GRIND MILESTONES</div><button type="button" class="drawer-fav ${e.favorite ? 'on' : ''}" data-action="toggle-favorite">${e.favorite ? '★ Saved' : '☆ Save weapon'}</button></div><div class="drawer-body"><section class="drawer-section"><div class="drawer-section-head">Grindable camos <small>${challengeTotal}/60 · ${basicDone}/6 families</small></div><div class="camo-challenge-panel">${bases}</div></section>${masteryPanel(weapon,profile())}<section class="drawer-section"><div class="drawer-section-head">Completionist <small>Manual unlock checklist</small></div><div class="complete-list">${tiers}</div></section><section class="drawer-section"><div class="drawer-section-head">Diamond grind <small>${safe(group.targetUnit)}</small></div><p class="drawer-explainer">${label}. The default target is an estimate; change it to match the in-game requirement.</p><div class="diamond-meter"><label>Completed<input inputmode="numeric" type="number" min="0" max="100000" data-number="diamondCount" value="${clamp(Number(e.diamondCount) || 0,0,100000)}"></label><span class="slash">/</span><label>Target<input inputmode="numeric" type="number" min="1" max="100000" data-number="diamondTarget" value="${target}"></label></div><div class="progress-track"><div class="progress-fill" style="width:${pct(Number(e.diamondCount) || 0,target)}%"></div></div></section><section class="drawer-section"><div class="drawer-section-head">Weapon level <small>Optional manual input</small></div><div class="level-fields"><label>Current level<input inputmode="numeric" type="number" min="0" max="200" data-number="level" value="${e.level || 0}"></label><label>Max level<input inputmode="numeric" type="number" min="0" max="200" data-number="maxLevel" value="${e.maxLevel || 0}"></label></div></section><section class="drawer-section"><div class="drawer-section-head">My notes</div><textarea id="weaponNotes" maxlength="800" placeholder="Add grind tips, build notes, or challenges to finish…">${safe(e.notes || '')}</textarea></section><div class="drawer-bottom-note">✓ Changes are automatically saved on this device. They are your own checklist, not verified Activision game data.</div></div>`;
   $('weaponDrawer').scrollTop = oldScroll;
 }
 async function openBuild(id, trigger) {
