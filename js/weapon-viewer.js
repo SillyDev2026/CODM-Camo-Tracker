@@ -1,7 +1,9 @@
 // Self-hosted GLB model viewer with software 3D fallback. Rotates projected three-dimensional
 // meshes (not CODM assets or a claim of exact weapon geometry).
 export function startWeaponViewer(canvas,weapon,getSlots){
- const ctx=canvas.getContext('2d'),pointers=new Map();
+ const ctx=canvas.getContext('2d');
+ if(!ctx)throw new Error('Canvas 2D rendering is unavailable on this device');
+ const pointers=new Map();
  let yaw=-.35,pitch=.1,zoom=1.05,turning=false,lastTime=0,drawTime=0,lastPinch=0,raf=0,alive=true;
  let realModel=null,modelReady=false;
  const color=(hex,shade)=>{const c=parseInt(hex.slice(1),16);return 'rgb('+[c>>16,(c>>8)&255,c&255].map(v=>Math.max(0,Math.min(255,Math.round(v*shade)))).join(',')+')';};
