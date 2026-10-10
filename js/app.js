@@ -497,6 +497,36 @@ async function downloadCloud() {
 }
 
 function handleAction(action) {
+  if(action==='jump-leaderboard'){
+    closeMenu();
+    $('leaderboardSection').scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  if(action==='lb-export'){exportRanking();return;}
+  if(action==='mastery-log'&&selectedId){
+    const drawer=$('drawerInner');
+    try{
+      const raw={
+        kills:drawer.querySelector('[data-match-kills]').value,
+        deaths:drawer.querySelector('[data-match-deaths]').value,
+        headshots:drawer.querySelector('[data-match-headshots]').value,
+        win:drawer.querySelector('[data-match-win]').checked
+      };
+      if(Number(raw.headshots)>Number(raw.kills))throw Error('Headshots cannot exceed match kills');
+      const next=addSession(currentMastery(selectedId),raw);
+      saveMastery(selectedId,next,true);
+      toast('Match recorded for '+BY_ID.get(selectedId).name);
+    }catch(error){toast(error.message,4400);}
+    return;
+  }
+  if(action==='mastery-undo'&&selectedId){
+    try{
+      if(!confirm('Undo the most recently logged match for '+BY_ID.get(selectedId).name+'?'))return;
+      saveMastery(selectedId,undoSession(currentMastery(selectedId)),true);
+      toast('Latest match entry undone');
+    }catch(error){toast(error.message,4400);}
+    return;
+  }
   if (action === 'open-settings') openSettings();
   else if (action === 'close-settings') closeSettings();
   else if (action === 'season-refresh') refreshSeasonCatalog(true);
@@ -546,6 +576,12 @@ function handleAction(action) {
 }
 function bindEvents() {
   document.addEventListener('click', event => {
+    const rankingWeapon=event.target.closest('[data-lb-open]');
+    if(rankingWeapon){
+      const id=rankingWeapon.dataset.lbOpen;
+      if(BY_ID.has(id)){openDrawer(id);closeMenu();}
+      return;
+    }
     const familyButton=event.target.closest('[data-camo-family]');
     if(familyButton&&selectedId&&currentMode==='mp'){
       if(BASIC_CAMOS.includes(familyButton.dataset.camoFamily)){
@@ -598,6 +634,19 @@ function bindEvents() {
   $('drawerInner').addEventListener('change', event => {
     if (!selectedId) return;
     const input = event.target;
+    if(input.dataset.masteryField){
+      const name=input.dataset.masteryField;
+      if(!['points','kills','deaths','headshots','matches','wins'].includes(name))return;
+      const original=currentMastery(selectedId);
+      const changed=cleanWeaponMastery({...original,[name]:bounded(input.value)});
+      saveMastery(selectedId,changed,false);
+      // Update dependents when wins exceed matches or headshots exceed kills.
+      for(const key of ['points','kills','deaths','headshots','matches','wins']){
+        const el=$('drawerInner').querySelector('[data-mastery-field="'+key+'"]');
+        if(el&&el!==document.activeElement)el.value=changed[key];
+      }
+      return;
+    }
     if(input.dataset.zombieCheck==='aetherCrystal'&&aetherEligible(BY_ID.get(selectedId)))mutate(selectedId,e=>{e.zombies.aetherCrystal=input.checked;},true);
     if(input.dataset.zombieNumber==='matches'&&aetherEligible(BY_ID.get(selectedId)))mutate(selectedId,e=>{e.zombies.matches=clamp(Number(input.value)||0,0,AETHER_MATCHES);},true);
     if(input.dataset.camoUnlock&&currentMode==='mp'){
@@ -654,6 +703,13 @@ function bindEvents() {
   $('drawerInner').addEventListener('focusout', event => {
     if (event.target.id === 'weaponNotes' && saveTimer != null) persist();
   });
+  for(const id of ['lbScope','lbMetric','lbClass']){
+    $(id).addEventListener('change',()=>{
+      const scope=$('lbScope').value;
+      if(scope==='profiles'&&['kd','headshots'].includes($('lbMetric').value))$('lbMetric').value='score';
+      updateLeaderboard(profile(),state.profiles);
+    });
+  }
   $('weaponSearch').addEventListener('input', renderWeaponGrid);
   $('sortBy').addEventListener('change', renderWeaponGrid);
   $('profileSelect').addEventListener('change', event => {
