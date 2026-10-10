@@ -9,15 +9,30 @@ export function cloudPath(profile) {
 }
 async function api(token, url, init = {}) {
   if (!token || typeof token !== 'string') throw new Error('Enter your fine-grained GitHub token');
-  const response = await fetch(`${BASE}${url}`, {
-    ...init,
-    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token.trim()}`, 'X-GitHub-Api-Version': '2022-11-28', ...init.headers },
-    cache: 'no-store'
-  });
-  if (response.status === 404) return { status: 404, data: null };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  let response;
+  try {
+    response = await fetch(`${BASE}${url}`, {
+      ...init,
+      headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token.trim()}`, 'X-GitHub-Api-Version': '2022-11-28', ...init.headers },
+      cache: 'no-store',
+      signal: controller.signal
+    });
+  } catch(error) {
+    if(error?.name === 'AbortError')throw new Error('GitHub request timed out. Check your connection and retry.');
+    throw new Error('Could not connect to GitHub. Check your internet connection.');
+  } finally {clearTimeout(timeout);}
+  if (response.status === 404 && (!init.method || init.method==='GET'))return {status:404,data:null};
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`GitHub ${response.status}: ${data.message || 'Request failed'}`);
-  return { status: response.status, data };
+  if (!response.ok) {
+    if(response.status===401)throw new Error('GitHub rejected the token. Unlock or replace your fine-grained token.');
+    if(response.status===403)throw new Error('GitHub access denied. Check repository Contents permissions and token expiry.');
+    if(response.status===404)throw new Error('Repository not found or write access unavailable. Check the owner, repository and Contents permission.');
+    if(response.status===409)throw new Error('GitHub file changed during upload. Download a backup or retry after checking the remote copy.');
+    throw new Error(`GitHub ${response.status}: ${String(data.message || 'Request failed').slice(0,200)}`);
+  }
+  return {status:response.status,data};
 }
 function encodeUtf8Base64(text) {
   const bytes = new TextEncoder().encode(text);
