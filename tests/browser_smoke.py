@@ -214,6 +214,15 @@ def main():
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold data lost on reload"
             assert page.locator('#weaponNotes').input_value() == 'Note saved when drawer is closed', "Notes were lost after editor close"
+            page.locator('[data-number="level"]').fill("999")
+            page.locator('[data-number="level"]').dispatch_event("change")
+            assert page.locator('[data-number="level"]').input_value()=="200", "Weapon level not capped at 200"
+            page.locator('[data-number="diamondTarget"]').fill("45")
+            page.locator('[data-number="diamondTarget"]').dispatch_event("change")
+            assert page.locator('[data-number="diamondTarget"]').input_value()=="45"
+            page.locator('[data-number="diamondTarget"]').fill("")
+            page.locator('[data-number="diamondTarget"]').dispatch_event("change")
+            assert page.locator('[data-number="diamondTarget"]').input_value()=="120", "Cleared Diamond target should reset to class default"
             page.locator('[data-action="close-drawer"]').click()
             page.locator('[data-mode="zombies"]').last.click()
             page.locator('[data-weapon="smg:qq9"]').click()
@@ -231,6 +240,19 @@ def main():
             wait_ready(other, errors)
             print("Storage fallback startup passed")
             context.close()
+            # A broken 3D context must not take down normal custom loadouts.
+            no3d = browser.new_context(viewport={"width":375,"height":812})
+            no3d.add_init_script("HTMLCanvasElement.prototype.getContext = function() { return null; };")
+            no3d_page = no3d.new_page()
+            no3d_page.goto(url,wait_until="domcontentloaded")
+            no3d_page.wait_for_function("document.documentElement.dataset.cvReady==='true'")
+            no3d_page.locator('[data-build="smg:qq9"]').click()
+            no3d_page.locator("#gunsmithModal").wait_for(state="visible",timeout=15000)
+            assert "3D PREVIEW UNAVAILABLE" in no3d_page.locator("#gunModelLabel").inner_text(), "No-canvas device not handled"
+            assert no3d_page.locator('[data-gs-slot="muzzle"]').is_visible(), "Custom builder unavailable without 3D"
+            no3d_page.locator("#gunsmithClose").click()
+            no3d.close()
+            print("3D-unavailable devices still have a functioning weapon builder")
             # The screenshot failure occurs when app modules never execute:
             # verify that users get a recovery action rather than empty sections.
             recovery = browser.new_context(viewport={"width":375,"height":812})
