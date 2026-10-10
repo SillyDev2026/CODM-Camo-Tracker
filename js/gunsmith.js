@@ -12,7 +12,14 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
  let weapon=null,build=null,viewer=null,origin=null,notesTimer=null,notesPending=null;
  const current=()=>build.presets[build.active];
  function report(message){$('gunsmithStatus').textContent=message;notify?.(message);}
- function save(next,repaint=true){build=sanitizeBuild(next,weapon.category);onSave(weapon.id,build);if(repaint)redraw();}
+ function refreshShare(){if(weapon&&$('gunsmithShareCode'))$('gunsmithShareCode').value=exportBuildCode(weapon.id,build);}
+ function refreshCapacity(){if(weapon)$('gunsmithCapacity').textContent=Object.keys(current().slots).length+' / '+MAX_ATTACHMENTS+' ATTACHMENTS';}
+ function save(next,repaint=true){
+  build=sanitizeBuild(next,weapon.category);
+  onSave(weapon.id,build);
+  if(repaint)redraw();
+  else {refreshShare();refreshCapacity();}
+ }
  function flushNotes(){
   clearTimeout(notesTimer);notesTimer=null;
   if(!weapon||!notesPending)return;
@@ -62,7 +69,7 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
   $('gunsmithNotes').value=p.notes;
   $('gunsmithGameCode').value=p.gameCode||'';
   $('gunsmithGameMode').value=p.gameMode||'MULTIPLAYER';
-  $('gunsmithShareCode').value=exportBuildCode(weapon.id,build);
+  refreshShare();
   $('gunsmithStats').innerHTML=STAT_NAMES.map(name=>{
    const v=p.stats[name],valid=typeof v==='number';
    return '<label class="gs-stat"><span>'+safe(name)+'</span><div class="gs-stat-track"><div style="width:'+(valid?Math.min(100,v):0)+'%"></div></div><input data-gs-stat="'+safe(name)+'" type="number" inputmode="decimal" min="0" max="999" step="1" placeholder="—" value="'+(valid?v:'')+'" aria-label="'+safe(name)+' in-game stat"></label>';
@@ -168,15 +175,25 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
      if(input){input.hidden=false;input.focus();}
     }else if(el.value && !isListedAttachment(weapon.id,slot,el.value) && !attachmentListFor(getLibrary?.(),weapon.id,slot).includes(el.value)){
      throw Error('This attachment is not listed for '+weapon.name+'. Use Custom to record an attachment you verified in-game.');
-    }else save(assignAttachment(build,weapon.category,slot,el.value));
+    }else save(assignAttachment(build,weapon.category,slot,el.value),false);
    }else if(el.dataset.gsCustom!==undefined){
     const slot=el.dataset.gsCustom;
     const name=el.value.trim();
+    if(!name)return;
     const next=assignAttachment(build,weapon.category,slot,name);
-    // Only save the name into the personal catalog if the build change passed
-    // validation (especially CODM's five-attachment limit).
+    // Validate capacity first. Never remount the focused input during blur,
+    // otherwise a nearby preset/copy tap can be lost on Android.
     if(name)onRememberAttachment?.(weapon.id,slot,name);
-    save(next);
+    save(next,false);
+    $('gunsmithMyParts').innerHTML=myAttachmentMarkup();
+    const select=modal.querySelector('select[data-gs-slot="'+slot+'"]');
+    if(select){
+     if(!Array.from(select.options).some(option=>option.value===name)){
+      const option=document.createElement('option');option.value=name;option.textContent=name;
+      select.add(option,select.options.length-1);
+     }
+     select.value=name;
+    }
    }else if(el.dataset.gsStat!==undefined){
     save(updateBuildDetail(build,weapon.category,el.dataset.gsStat,el.value),false);
     const bar=el.closest('.gs-stat')?.querySelector('.gs-stat-track>div');
