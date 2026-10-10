@@ -197,6 +197,7 @@ def main():
             page.locator('[data-quick="smg:qq9"]').click()
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold quick toggle failed"
+            assert page.locator('[data-camo-total]').inner_text()=="60/60", "Gold confirmation did not mark all 60 stages"
             page.locator('#weaponNotes').fill('Note saved when drawer is closed')
             page.locator('[data-action="close-drawer"]').click()
             page.wait_for_timeout(180)
