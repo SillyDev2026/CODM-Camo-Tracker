@@ -63,6 +63,9 @@ def main():
             page.set_viewport_size({"width": 375, "height": 812})
             assert page.locator("#seasonTitle").count() == 1, "Season command missing"
             assert page.locator("#focusResume").count() == 1, "Continue button missing"
+            assert page.locator("#lbScope option").count() == 2, "Local leaderboard scope missing"
+            assert page.locator("#lbMetric option").count() >= 7, "Best weapon metrics missing"
+            assert "No recorded" in page.locator("#lbRows").inner_text(), "Empty new profile has fabricated rankings"
             assert page.locator('[data-quick="smg:qq9"]').count() == 1, "One-tap Gold action missing"
             page.locator("#weaponSearch").fill("qq9")
             assert page.locator(".weapon-card").count() == 1, "Search is not narrowing results"
@@ -198,6 +201,35 @@ def main():
             page.locator('[data-weapon="smg:qq9"]').click()
             assert page.locator('input[data-tier="gold"]').is_checked(), "Gold quick toggle failed"
             assert page.locator('[data-camo-total]').inner_text()=="60/60", "Gold confirmation did not mark all 60 stages"
+            assert page.locator('#wmRank').inner_text()=="Iron", "Weapon Master rank missing"
+            page.locator('[data-mastery-field="points"]').fill("3700")
+            page.locator('[data-mastery-field="points"]').dispatch_event("change")
+            assert page.locator('#wmRank').inner_text()=="Master", "Master tier not updated"
+            page.locator('[data-mastery-field="kills"]').fill("50")
+            page.locator('[data-mastery-field="kills"]').dispatch_event("change")
+            page.locator('[data-mastery-field="deaths"]').fill("10")
+            page.locator('[data-mastery-field="deaths"]').dispatch_event("change")
+            page.locator('[data-mastery-field="headshots"]').fill("20")
+            page.locator('[data-mastery-field="headshots"]').dispatch_event("change")
+            assert "5.00" in page.locator("#wmMetrics").inner_text(), "K/D not recalculated"
+            page.locator('[data-match-kills]').fill("10")
+            page.locator('[data-match-deaths]').fill("5")
+            page.locator('[data-match-headshots]').fill("3")
+            page.locator('[data-match-win]').check()
+            page.locator('[data-action="mastery-log"]').click()
+            assert page.locator('[data-mastery-field="kills"]').input_value()=="60", "Logging match failed"
+            assert page.locator('[data-mastery-field="wins"]').input_value()=="1", "Win counter failed"
+            assert "10 K / 5 D" in page.locator(".wm-history").inner_text()
+            page.once("dialog", lambda dialog: dialog.accept())
+            page.locator('[data-action="mastery-undo"]').click()
+            assert page.locator('[data-mastery-field="kills"]').input_value()=="50", "Undo match did not restore lifetime kills"
+            assert page.locator('[data-mastery-field="wins"]').input_value()=="0", "Undo win failed"
+            page.locator('[data-match-kills]').fill("10")
+            page.locator('[data-match-deaths]').fill("5")
+            page.locator('[data-match-headshots]').fill("3")
+            page.locator('[data-match-win]').check()
+            page.locator('[data-action="mastery-log"]').click()
+            assert "QQ9" in page.locator("#lbRows").inner_text(), "Leaderboard not refreshed"
             page.locator('#weaponNotes').fill('Note saved when drawer is closed')
             page.locator('[data-action="close-drawer"]').click()
             page.wait_for_timeout(180)
@@ -222,6 +254,12 @@ def main():
             wait_ready(page, errors)
             assert page.locator('[data-mode="zombies"].mode-tab').get_attribute("aria-pressed") == "true", "Mode preference did not persist"
             page.locator('[data-mode="mp"].mode-tab').click()
+            assert "QQ9" in page.locator("#lbRows").inner_text(), "Weapon leaderboard missing after reload"
+            page.locator("#lbScope").select_option("profiles")
+            assert "Player 1" in page.locator("#lbRows").inner_text(), "Local profiles leaderboard missing"
+            page.locator("#lbScope").select_option("weapons")
+            page.locator("#lbMetric").select_option("points")
+            assert "3,700" in page.locator("#lbRows").inner_text(), "Mastery points missing after reload"
             page.locator("#weaponSearch").fill("PDW-57")
             page.locator('[data-weapon="smg:pdw-57"]').click()
             page.locator('[data-camo-family="Jungle"]').click()
