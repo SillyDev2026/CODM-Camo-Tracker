@@ -324,7 +324,10 @@ async function importBackup(file) {
     if (index >= 0) {
       if (!confirm(`Replace your local profile "${state.profiles[index].name}" with this backup?`)) return;
       state.profiles[index] = incoming;
-    } else state.profiles.push(incoming);
+    } else {
+      if(state.profiles.length>=30)throw new Error('30 profile limit reached. Delete a profile only after exporting a backup.');
+      state.profiles.push(incoming);
+    }
     state.activeProfileId = incoming.id;
   } else throw new Error('This file is not a CamoVault backup');
   persist(); renderDashboard(); openSettings(); toast('Backup imported successfully');
@@ -487,8 +490,11 @@ function bindEvents() {
       if (input.dataset.tier === 'gold' && input.checked) for (const camo of BASIC_CAMOS) e.base[camo] = true;
     }, true);
     if (input.dataset.number) mutate(selectedId, e => {
-      const min = input.dataset.number === 'diamondTarget' ? 1 : 0;
-      e[input.dataset.number] = clamp(Number(input.value), min, 100000);
+      const field=input.dataset.number;
+      if(field==='diamondTarget' && input.value.trim()===''){delete e.diamondTarget;return;}
+      const min=field==='diamondTarget'?1:0;
+      const max=field==='level'||field==='maxLevel'?200:100000;
+      e[field]=clamp(Number(input.value),min,max);
     }, true);
   });
   $('drawerInner').addEventListener('input', event => {
