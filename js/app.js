@@ -27,6 +27,8 @@ let toastTimer;
 let activeDialog = null;
 let gunsmith = null;
 let gunsmithPromise = null;
+let buildRequest = 0;
+let cloudBusy = false;
 
 function saveViewPreference(){try{localStorage.setItem('camovault-view-v1',JSON.stringify({mode:currentMode,category:activeCategory}));}catch{}}
 function restoreViewPreference(){try{const v=JSON.parse(localStorage.getItem('camovault-view-v1')||'null');if(v?.mode==='zombies')currentMode='zombies';if(v?.category && GROUP_BY_ID.has(v.category)){activeCategory=v.category;currentView='category';}}catch{}}
@@ -227,6 +229,8 @@ function renderDrawer() {
 async function openBuild(id, trigger) {
   const weapon = BY_ID.get(id);
   if (!weapon) return;
+  const request = ++buildRequest;
+  const playerId = profile().id;
   try {
     if (!gunsmithPromise) gunsmithPromise = Promise.all([
       import('./gunsmith.js?v=1.7.2'),
@@ -249,6 +253,8 @@ async function openBuild(id, trigger) {
       })
     ).catch(error => {gunsmithPromise=null;throw error;});
     gunsmith=await gunsmithPromise;
+    // Ignore obsolete opens (rapid taps, profile change, or a closed drawer).
+    if(request!==buildRequest || profile().id!==playerId || (activeDialog==='settings'))return;
     if (activeDialog === 'drawer') closeDrawer();
     if (activeDialog === 'settings') closeSettings();
     closeMenu();
@@ -270,6 +276,7 @@ function openDrawer(id) {
   $('weaponDrawer').querySelector('[data-action="close-drawer"]').focus();
 }
 function closeDrawer() {
+  ++buildRequest;
   if (saveTimer !== null && saveTimer !== undefined) persist();
   selectedId = null;
   $('drawerBackdrop').hidden = true; $('weaponDrawer').hidden = true;
@@ -277,6 +284,8 @@ function closeDrawer() {
   document.body.style.overflow = '';
 }
 function openSettings() {
+  ++buildRequest;
+  if(activeDialog==='build')gunsmith?.close();
   if (activeDialog === 'drawer') closeDrawer();
   const selected = profile().id;
   $('profileSelect').innerHTML = state.profiles.map(p => `<option value="${safe(p.id)}" ${p.id === selected ? 'selected' : ''}>${safe(p.name)}</option>`).join('');
@@ -362,30 +371,49 @@ function formCloud() {
   return { owner: $('cloudOwner').value.trim(), repo: $('cloudRepo').value.trim(), token: $('cloudToken').value.trim() };
 }
 async function uploadCloud() {
-  const { owner, repo, token } = formCloud();
-  const message = $('cloudMessage'); message.textContent = 'Uploading to your GitHub repository…';
-  try {
-    // Flush any pending local saves. Cloud only receives the current profile.
-    const result = await writeCloudProfile(token, owner, repo, profile());
-    profile().cloudSyncAt = result.savedAt;
-    persist(); message.textContent = '✓ GitHub backup saved successfully.'; toast('GitHub backup complete');
-  } catch (error) { message.textContent = `Could not back up: ${error.message}`; }
+  if(cloudBusy){toast('A GitHub backup operation is already running');return;}
+  cloudBusy=true;
+  const {owner,repo,token}=formCloud();
+  const selected=cleanProfile(profile());
+  const id=selected.id;
+  const before=JSON.stringify({name:selected.name,progress:selected.progress,builds:selected.builds,attachmentLibrary:selected.attachmentLibrary});
+  const message=$('cloudMessage');message.textContent='Uploading to your GitHub repository…';
+  try{
+    const result=await writeCloudProfile(token,owner,repo,selected);
+    const target=state.profiles.find(p=>p.id===id);
+    if(target){
+      target.cloudSyncAt=result.savedAt;
+      persist();
+    }
+    const now=target?cleanProfile(target):null;
+    const unchanged=now&&JSON.stringify({name:now.name,progress:now.progress,builds:now.builds,attachmentLibrary:now.attachmentLibrary})===before;
+    message.textContent=unchanged?'✓ GitHub backup saved successfully.':'✓ Uploaded. You changed local data during the upload; upload again to include the latest changes.';
+    toast(unchanged?'GitHub backup complete':'Backup complete — new changes still need syncing',4600);
+  }catch(error){message.textContent='Could not back up: '+error.message;}
+  finally{cloudBusy=false;}
 }
 async function downloadCloud() {
-  const { owner, repo, token } = formCloud();
-  const message = $('cloudMessage'); message.textContent = 'Checking GitHub for this profile…';
-  try {
-    const { profile: remote } = await readCloudProfile(token, owner, repo, profile());
-    if (!remote) throw new Error('No backup for this profile ID. Import the original backup first to restore its ID.');
-    if (!confirm(`Restore "${remote.name || profile().name}" from GitHub? This will replace this profile's local camo progress.`)) { message.textContent = 'Restore canceled.'; return; }
-    const normalized = cleanProfile(remote);
-    normalized.cloudSyncAt = Number(remote.savedAt) || 0;
-    const index = state.profiles.findIndex(p => p.id === profile().id);
-    if (index < 0 || normalized.id !== profile().id) throw new Error('Backup profile ID does not match the selected profile');
-    state.profiles[index] = normalized;
-    persist(); renderDashboard(); message.textContent = '✓ GitHub profile restored successfully.'; toast('Profile restored');
-  } catch (error) { message.textContent = `Could not restore: ${error.message}`; }
+  if(cloudBusy){toast('A GitHub backup operation is already running');return;}
+  cloudBusy=true;
+  const {owner,repo,token}=formCloud();
+  const selected=cleanProfile(profile());
+  const message=$('cloudMessage');message.textContent='Checking GitHub for this profile…';
+  try{
+    const {profile:remote}=await readCloudProfile(token,owner,repo,selected);
+    if(!remote)throw new Error('No backup for this profile ID. Import the original backup first to restore its ID.');
+    const normalized=cleanProfile(remote);
+    if(normalized.id!==selected.id)throw new Error('Backup profile ID does not match the selected profile');
+    const index=state.profiles.findIndex(p=>p.id===selected.id);
+    if(index<0)throw new Error('That profile no longer exists locally');
+    if(!confirm('Restore "'+normalized.name+'" from GitHub? This replaces only its local progress, builds, and custom attachments.')){message.textContent='Restore canceled.';return;}
+    normalized.cloudSyncAt=Number(remote.savedAt)||0;
+    state.profiles[index]=normalized;
+    persist();renderDashboard();
+    message.textContent='✓ GitHub profile restored successfully.';toast('Profile restored');
+  }catch(error){message.textContent='Could not restore: '+error.message;}
+  finally{cloudBusy=false;}
 }
+
 function handleAction(action) {
   if (action === 'open-settings') openSettings();
   else if (action === 'close-settings') closeSettings();
@@ -473,6 +501,8 @@ function bindEvents() {
   $('sortBy').addEventListener('change', renderWeaponGrid);
   $('profileSelect').addEventListener('change', event => {
     if (!state.profiles.some(p => p.id === event.target.value)) return;
+    ++buildRequest;
+    if(activeDialog==='build')gunsmith?.close();
     state.activeProfileId = event.target.value;
     persist(); renderDashboard(); toast('Profile switched');
   });
