@@ -494,7 +494,14 @@ function handleAction(action) {
     if (!count) { toast('All six starter SMGs are already Gold'); return; }
     if (!confirm(`Add Gold for the six SMGs from your earlier progress? (${count} still need updating)`)) return;
     const now = Date.now();
-    for (const id of STARTER_GOLD) profile().progress[id] = { ...entry(id), gold: true, base: Object.fromEntries(BASIC_CAMOS.map(camo => [camo, true])), updatedAt: now };
+    for (const id of STARTER_GOLD) {
+      const draft={...entry(id),gold:true,updatedAt:now};
+      for(const family of BASIC_CAMOS){
+        const updated=confirmCamoFamily(draft,family,true);
+        draft.base=updated.base;draft.camoChallenges=updated.camoChallenges;
+      }
+      profile().progress[id]=draft;
+    }
     persist(); renderDashboard(); toast('Six Gold SMGs imported');
   } else if (action === 'vault-save') rememberGitHubToken();
   else if (action === 'vault-unlock') restoreGitHubToken();
@@ -537,7 +544,7 @@ function bindEvents() {
     const action = event.target.closest('[data-action]');
     if (action) { handleAction(action.dataset.action); return; }
     const quick=event.target.closest('[data-quick]');
-    if(quick){const id=quick.dataset.quick;if(BY_ID.has(id))mutate(id,e=>{if(currentMode==='zombies'){e.zombies.aetherCrystal=!e.zombies.aetherCrystal;}else{e.gold=!e.gold;if(e.gold)for(const camo of BASIC_CAMOS)e.base[camo]=true;}});return;}
+    if(quick){const id=quick.dataset.quick;if(BY_ID.has(id))mutate(id,e=>{if(currentMode==='zombies'){e.zombies.aetherCrystal=!e.zombies.aetherCrystal;}else{e.gold=!e.gold;if(e.gold)for(const family of BASIC_CAMOS){const updated=confirmCamoFamily(e,family,true);e.base=updated.base;e.camoChallenges=updated.camoChallenges;}}});return;}
     const favorite=event.target.closest('[data-fav]');
     if(favorite){const id=favorite.dataset.fav;if(BY_ID.has(id))mutate(id,e=>{e.favorite=!e.favorite;});return;}
     const mode=event.target.closest('[data-mode]');
