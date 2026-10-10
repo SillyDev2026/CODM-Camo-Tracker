@@ -31,7 +31,9 @@ test('model viewer runtime is self-hosted and licensed',()=>{
 
 test('service worker keeps core app available without eager-downloading any 3D assets',()=>{
  const sw=fs.readFileSync(new URL('../sw.js',import.meta.url),'utf8');
- assert.match(sw,/camovault-assets-v1\.\d+\.\d+/);
+ assert.match(sw,/camovault-assets-v\d+\.\d+\.\d+/);
+ assert.ok(sw.includes("'./js/mastery.js'"));
+ assert.ok(sw.includes("'./js/mastery-ui.js'"));
  assert.ok(sw.includes("'./js/app.js'"));
  assert.ok(sw.includes("'./js/catalog.js'"));
  assert.ok(sw.includes('Promise.allSettled(CORE.map'));
