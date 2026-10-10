@@ -92,7 +92,16 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
   $('gunsmithImportCode').value='';
   modal.hidden=false;backdrop.hidden=false;document.body.classList.add('gunsmith-open');
   redraw();
-  viewer=startWeaponViewer($('gunsmithCanvas'),w,()=>current().slots);
+  $('gunModelLabel').textContent='LOADING 3D PREVIEW';
+  try{
+   viewer=startWeaponViewer($('gunsmithCanvas'),w,()=>current().slots);
+  }catch(error){
+   // A WebGL/canvas failure must not stop attachment editing and saving.
+   console.warn('Optional 3D preview failed',error);
+   viewer=null;
+   $('gunModelLabel').textContent='3D PREVIEW UNAVAILABLE';
+   $('gunsmithStatus').textContent='Weapon builder works normally. 3D preview is unavailable on this device.';
+  }
   $('gunsmithClose').focus();
  }
  function hide(){
@@ -164,6 +173,16 @@ export function createGunsmith({getBuild,onSave,getLibrary,onRememberAttachment,
   }
  });
  backdrop.addEventListener('click',hide);
+ modal.addEventListener('keydown',event=>{
+  if(event.key!=='Tab'||!weapon)return;
+  const fields=Array.from(modal.querySelectorAll('a[href],button,input,select,textarea')).filter(el=>
+   !el.disabled&&!el.hidden&&el.getClientRects().length>0&&getComputedStyle(el).visibility!=='hidden'
+  );
+  if(!fields.length)return;
+  const first=fields[0],last=fields[fields.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ });
  modal.addEventListener('change',e=>{
   if(!weapon)return;
   const el=e.target;
