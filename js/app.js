@@ -215,6 +215,22 @@ function renderZombiesDrawer(w,e,group,oldScroll) {
   $('drawerInner').innerHTML=start+challenge+fields;
   $('weaponDrawer').scrollTop=oldScroll;
 }
+function refreshCamoIndicators(){
+ if(!selectedId||currentMode!=='mp')return;
+ const progress=camoFamilyProgress(entry(selectedId),activeCamoFamily);
+ const objective=camoObjective(BY_ID.get(selectedId).category,activeCamoFamily).toLowerCase();
+ for(let i=0;i<CAMO_STEPS;i++){
+  const row=$('drawerInner').querySelector('[data-camo-stage-row="'+i+'"]');
+  if(!row)continue;
+  const target=progress.targets[i],done=progress.unlocked[i],ready=target!==null&&progress.count>=target;
+  row.classList.toggle('ready',ready&&!done);
+  row.classList.toggle('unlocked',done);
+  const line=row.querySelector('[data-camo-stage-status]');
+  if(line)line.textContent=done?'Confirmed unlocked':target===null?'Enter the in-game requirement':ready?'Target reached · confirm in CODM':progress.count+' / '+target+' '+objective;
+ }
+ const counter=$('drawerInner').querySelector('[data-camo-total]');
+ if(counter)counter.textContent=totalCamoStages(entry(selectedId))+'/60';
+}
 function renderDrawer() {
   if (!selectedId) return;
   const oldScroll = $('weaponDrawer').scrollTop;
@@ -559,6 +575,7 @@ function bindEvents() {
           const updated=applyCamoChange(e,family,'target',input.value,stage);
           e.camoChallenges=updated.camoChallenges;e.base=updated.base;
         },false);
+        refreshCamoIndicators();
       }
       return;
     }
@@ -569,6 +586,7 @@ function bindEvents() {
           const updated=applyCamoChange(e,family,'count',input.value);
           e.camoChallenges=updated.camoChallenges;e.base=updated.base;
         },false);
+        refreshCamoIndicators();
       }
       return;
     }
