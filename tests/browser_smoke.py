@@ -87,15 +87,24 @@ def main():
             assert page.locator("#gunModelLabel").inner_text() == "IMPORTED CC0 GLB · REAL MESH", "3D model did not load"
             print("Real licensed GLB 3D model rendered in Chromium")
             assert "GENERAL SUGGESTIONS" not in page.locator("#gunsmithCoverage").inner_text()
+            initial_share=page.locator("#gunsmithShareCode").input_value()
             page.locator('[data-gs-slot="optic"]').select_option("__custom__")
             assert page.locator('[data-gs-custom="optic"]').is_visible()
             page.locator('[data-gs-custom="optic"]').fill("Red Dot Sight")
             page.locator('[data-gs-custom="optic"]').dispatch_event("change")
             assert page.locator('[data-gs-slot="optic"]').input_value() == "Red Dot Sight"
+            assert page.locator("#gunsmithShareCode").input_value() != initial_share, "Share code did not refresh after equipping an attachment"
             assert "Red Dot Sight" in page.locator("#gunsmithMyParts").inner_text()
             assert page.locator("#gunsmithCapacity").inner_text().startswith("1 / 5")
+            focus_before=page.locator("#gunsmithShareCode").input_value()
             page.locator("#gunsmithFocus").select_option("control")
             assert "recoil" in page.locator("#gunsmithFocusTip").inner_text().lower()
+            assert page.locator("#gunsmithShareCode").input_value()!=focus_before, "Share code not updated for build goal"
+            page.locator("#gunsmithBuildName").fill("Recoil Control QQ9")
+            page.locator('[data-gs-preset="1"]').click()
+            assert page.locator('.gs-preset[aria-pressed="true"]').get_attribute("data-gs-preset")=="1", "Preset tap was lost on name input blur"
+            page.locator('[data-gs-preset="0"]').click()
+            assert page.locator("#gunsmithBuildName").input_value()=="Recoil Control QQ9", "Renamed preset lost"
             page.locator('[data-gs-preset="1"]').click()
             page.locator('[data-gs-slot="muzzle"]').select_option("OWC Light Compensator")
             page.locator('[data-gs-preset="0"]').click()
@@ -121,8 +130,10 @@ def main():
             print("Active preset AFTER choosing 1:", page.locator('.gs-preset[aria-pressed="true"]').get_attribute("data-gs-preset"))
             assert page.locator("#gunsmithGameCode").input_value() == "QQ9-1T3A5B6A7M", "Native CODM game code lost"
             assert page.locator("#gunsmithGameMode").input_value() == "BATTLE ROYALE"
+            previous_share=page.locator("#gunsmithShareCode").input_value()
             page.locator('[data-gs-stat="Accuracy"]').fill("85")
             page.locator('[data-gs-stat="Accuracy"]').dispatch_event("change")
+            assert page.locator("#gunsmithShareCode").input_value()!=previous_share, "Share code not updated for in-game stats"
             page.locator("#gunsmithClose").click()
             assert page.locator("#gunsmithModal").is_hidden(), "Gunsmith modal did not close"
             # Weapon-specific menus: no attachment leakage across SMGs.
