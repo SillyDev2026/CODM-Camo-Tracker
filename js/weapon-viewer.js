@@ -2,7 +2,7 @@
 // meshes (not CODM assets or a claim of exact weapon geometry).
 export function startWeaponViewer(canvas,weapon,getSlots){
  const ctx=canvas.getContext('2d'),pointers=new Map();
- let yaw=-.35,pitch=.1,zoom=1.05,turning=false,lastTime=0,raf=0,alive=true;
+ let yaw=-.35,pitch=.1,zoom=1.05,turning=false,lastTime=0,drawTime=0,lastPinch=0,raf=0,alive=true;
  let realModel=null,modelReady=false;
  const color=(hex,shade)=>{const c=parseInt(hex.slice(1),16);return 'rgb('+[c>>16,(c>>8)&255,c&255].map(v=>Math.max(0,Math.min(255,Math.round(v*shade)))).join(',')+')';};
  const faces=[
@@ -61,6 +61,10 @@ export function startWeaponViewer(canvas,weapon,getSlots){
  }
  function frame(t){
   if(!alive)return;
+  // Fall back to ~30 FPS on mobile and skip work in background tabs.
+  raf=requestAnimationFrame(frame);
+  if(document.visibilityState==='hidden'||t-drawTime<32)return;
+  drawTime=t;
   const [w,h]=resize();
   ctx.clearRect(0,0,w,h);
   const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,'#172b33');bg.addColorStop(1,'#0a161d');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
@@ -68,7 +72,7 @@ export function startWeaponViewer(canvas,weapon,getSlots){
   ctx.strokeStyle='rgba(150,201,183,.1)';ctx.lineWidth=Math.max(1,w/550);
   for(let i=0;i<13;i++){const u=i/12*w;ctx.beginPath();ctx.moveTo(u,0);ctx.lineTo(u,h);ctx.stroke();}
   for(let i=0;i<9;i++){const u=i/8*h;ctx.beginPath();ctx.moveTo(0,u);ctx.lineTo(w,u);ctx.stroke();}
-  if(turning&&document.visibilityState!=='hidden'){yaw+=(t-lastTime)*.00018;}
+  if(turning){yaw+=Math.min(64,t-lastTime||0)*.00018;}
   lastTime=t;
   const polygons=geometry().map(face=>{
    const p=face.v.map(v=>project(v,w,h));
@@ -82,16 +86,15 @@ export function startWeaponViewer(canvas,weapon,getSlots){
   ctx.fillText(weapon.name.toUpperCase()+'  /  '+weapon.category.toUpperCase(),16,25);
   ctx.font=Math.max(10,Math.floor(w/60))+'px system-ui';ctx.fillStyle='#90a7a0';
   ctx.fillText('CLASS-BASED 3D CONCEPT · NOT IN-GAME MODEL',16,h-16);
-  raf=requestAnimationFrame(frame);
  }
  const down=e=>{canvas.setPointerCapture?.(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);turning=false;};
  const move=e=>{
   if(!pointers.has(e.pointerId))return;
   const before=pointers.get(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);
   if(pointers.size===1){yaw+=(e.clientX-before[0])*.009;pitch=Math.max(-.75,Math.min(.75,pitch+(e.clientY-before[1])*.006));}
-  else if(pointers.size===2){const now=[...pointers.values()],dist=Math.hypot(now[0][0]-now[1][0],now[0][1]-now[1][1]);zoom=Math.max(.65,Math.min(1.8,zoom+((dist-(canvas.__lastDist||dist))*.003)));canvas.__lastDist=dist;}
+  else if(pointers.size===2){const now=[...pointers.values()],dist=Math.hypot(now[0][0]-now[1][0],now[0][1]-now[1][1]);zoom=Math.max(.65,Math.min(1.8,zoom+(lastPinch?(dist-lastPinch)*.003:0)));lastPinch=dist;}
  };
- const up=e=>{pointers.delete(e.pointerId);canvas.__lastDist=0;};
+ const up=e=>{pointers.delete(e.pointerId);lastPinch=0;};
  const wheel=e=>{e.preventDefault();zoom=Math.min(1.8,Math.max(.65,zoom-e.deltaY*.0009));};
  canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);
  canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
